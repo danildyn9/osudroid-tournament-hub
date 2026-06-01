@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>osu!droid Tournament Stats</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="header">
+  <h1>osu!droid <span>Tournament Stats</span></h1>
+  <p>Mappool statistics & player leaderboard</p>
+</div>
+
+<div class="input-section">
+  <div class="input-label">Match URLs (comma separated)</div>
+  <div class="input-row">
+    <textarea id="urls-input" placeholder="https://osudroid.kansenindex.dev/spectator/match_history?id=109, https://osudroid.kansenindex.dev/spectator/match_history?id=110, ..."></textarea>
+    <button class="btn" id="load-btn" onclick="loadMatches()">Load</button>
+  </div>
+  <div class="status" id="status"></div>
+</div>
+
+<div class="tabs" id="tabs" style="display:none;">
+  <div class="tab active" onclick="switchTab('mappool')">Mappool Stats</div>
+  <div class="tab" onclick="switchTab('leaderboard')">Player Leaderboard</div>
+</div>
+
+<div class="content show" id="tab-mappool">
+  <div class="empty">Enter match URLs above and click Load</div>
+</div>
+<div class="content" id="tab-leaderboard">
+  <div class="empty">Enter match URLs above and click Load</div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
