@@ -565,8 +565,11 @@ a.pl-droid:hover{text-decoration:underline;color:var(--accent);}
   .summary-bar{gap:16px;padding:14px 16px;}
   .sum-item .sum-val{font-size:22px;}
 
-  /* wide tables: keep a usable min width and let the panel scroll sideways */
-  .players-table,.lb-table{min-width:540px;}
+  /* wide tables: keep a min width big enough for the auto "Player" column to get
+     real space (fixed columns already sum to ~632px / ~442px), and let the panel
+     scroll sideways instead of squashing the name column to zero. */
+  .players-table{min-width:760px;}
+  .lb-table{min-width:600px;}
 
   .bracket-page{padding:1rem;}
   .bracket-top h1{font-size:18px;order:3;width:100%;}
@@ -1309,6 +1312,9 @@ function switchView(v) {
   else if (v==='leaderboard') renderLeaderboard();
   else if (v==='players') renderPlayersTab();
   else if (v==='matches') renderMatchesTab();
+  // keep the active tab fully visible when the tab bar scrolls horizontally (mobile)
+  const at = document.getElementById('vt-' + v);
+  if (at && at.scrollIntoView) at.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   syncURL();
 }
 
