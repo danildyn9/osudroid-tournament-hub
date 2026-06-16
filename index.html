@@ -449,8 +449,9 @@ select:focus{border-color:var(--accent);}
 /* TOURNAMENT BRACKET (Challonge embed, recolored) */
 .bracket-page{padding:1.5rem 2rem 3rem;max-width:100%;}
 .bracket-top{display:flex;align-items:center;gap:14px;margin-bottom:1.25rem;flex-wrap:wrap;}
-.bracket-top h1{font-size:22px;font-weight:800;color:#fff;}
-.bracket-back{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-size:13px;font-weight:600;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all .15s;}
+.bracket-top h1{font-family:var(--head);font-size:22px;font-weight:700;color:#fff;}
+.bracket-top h1 span{color:var(--accent);}
+.bracket-back{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:var(--head);font-size:13px;font-weight:600;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all .15s;}
 .bracket-back:hover{border-color:var(--accent);color:var(--accent);}
 .bracket-hint{font-size:12px;color:var(--muted);}
 .bracket-embed-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:8px;overflow:hidden;animation:fadeUp .4s ease both;}
@@ -533,6 +534,74 @@ a.pl-droid:hover{text-decoration:underline;color:var(--accent);}
 .tp-e-avatar{flex:1 1 100%;}
 .tp-e-profile{flex:1 1 100%;}
 .tp-e-del{background:var(--surface)!important;border:1px solid #ef535044!important;color:#ef5350!important;border-radius:6px;width:30px;cursor:pointer;font-size:12px;}
+
+/* ===== RESPONSIVE / MOBILE ===== */
+@media(max-width:768px){
+  .topbar{padding:0 1rem;}
+  .brand img{height:30px;}
+  .brand .brand-word{font-size:17px;}
+  .nav-links{gap:2px;}
+  .nav-link{font-size:14px;padding:7px 10px;}
+  .admin-btn{font-size:13px;padding:6px 10px;}
+
+  .home{padding:1.5rem 1rem 3rem;}
+  .tour-heading{font-size:24px;}
+  .tcard{height:160px;}
+  .tcard-name{font-size:18px;}
+  .tcard-label{max-width:86%;padding:10px 38px 10px 16px;}
+
+  .stats-header{padding:1rem 1rem 0;gap:10px;}
+  .stats-title{font-size:18px;order:3;width:100%;}
+
+  .stage-bar{padding:0 1rem;}
+  .stage-tab{padding:12px 14px;font-size:14px;}
+
+  .view-bar{padding:1rem 1rem 0;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .view-tab{white-space:nowrap;flex-shrink:0;padding:9px 14px;font-size:14px;}
+
+  .main{padding:0 1rem 2rem;}
+  .panel{padding:1rem;overflow-x:auto;}
+
+  .summary-bar{gap:16px;padding:14px 16px;}
+  .sum-item .sum-val{font-size:22px;}
+
+  /* wide tables: keep a usable min width and let the panel scroll sideways */
+  .players-table,.lb-table{min-width:540px;}
+
+  .bracket-page{padding:1rem;}
+  .bracket-top h1{font-size:18px;order:3;width:100%;}
+  .bracket-embed{height:68vh;min-height:440px;}
+
+  .teams-grid{grid-template-columns:1fr;}
+
+  .mm-card{padding:12px 14px;gap:10px;}
+  .mm-card-name{font-size:15px;}
+  .mm-scoreboard{gap:14px;padding:16px;}
+  .mm-team{font-size:15px;}
+  .mm-team-tally{font-size:26px;}
+
+  .admin-overlay{padding-top:0;}
+  .admin-panel{width:100%;height:100vh;}
+
+  .profile-overlay{padding:1rem;}
+  .profile-stats{grid-template-columns:repeat(2,1fr);}
+}
+
+@media(max-width:480px){
+  .brand .brand-word{font-size:15px;}
+  .nav-link{font-size:13px;padding:6px 8px;}
+  .tour-heading{font-size:20px;}
+  .stats-title{font-size:16px;}
+  .pstat-val{font-size:16px;}
+  .mp-card{width:100%;}
+
+  /* team editor: one field per line on phones */
+  .tp-edit-row{flex-direction:column;align-items:stretch;}
+  .tp-edit-row input{width:100%;flex:1 1 auto;min-width:0;}
+  .tp-e-prev{align-self:flex-start;}
+  .tp-e-fetch{width:100%;}
+  .tp-e-del{width:100%;align-self:stretch;}
+}
 </style>
 </head>
 <body>
@@ -3105,7 +3174,7 @@ function renderBracket() {
   const c = document.getElementById('bracket-body');
   const link = document.getElementById('bracket-open-link');
   const titleEl = document.getElementById('bracket-title');
-  if (titleEl && t) titleEl.innerHTML = `${escAttr(t.name)} — Bracket`;
+  if (titleEl && t) titleEl.innerHTML = `${tournamentNameHTML(t.name)} <span style="color:var(--muted);font-weight:600;">— Bracket</span>`;
 
   const slug = t ? (t.challongeSlug || '') : '';
 
