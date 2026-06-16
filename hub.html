@@ -1,0 +1,3331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>osu!droid Tournament Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0c16;
+  --surface: #14141f;
+  --surface2: #1b1b2b;
+  --surface3: #232338;
+  --border: #25253c;
+  --border2: #33334f;
+  --text: #f0f0f6;
+  --muted: #8585a8;
+  --accent: #7c6ff7;
+  --accent2: #5a4fd4;
+  --gold: #f5c842;
+  --silver: #b0b8c8;
+  --bronze: #cd7f32;
+  --green: #66bb6a;
+  --red: #ef5350;
+  --blue: #4a9ade;
+  --nm: #6fcf6f; --hd: #e8c84a; --hr: #e05050;
+  --dt: #9b5de5; --fl: #26c6da; --tb: #ff6ec7;
+  --pr: #4a9ade; --fm: #56c8c8;
+  --head: 'Fredoka','Segoe UI',system-ui,sans-serif;
+  --body: 'Inter','Segoe UI',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scrollbar-gutter:stable;}
+body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh;}
+h1,h2,h3,.site-title{font-family:var(--head);}
+
+/* TOP NAV */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 2.5rem;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:50;}
+.brand{display:flex;align-items:center;gap:10px;cursor:pointer;}
+.brand img{height:36px;width:auto;display:block;border-radius:7px;}
+.brand .brand-mark{display:flex;align-items:center;}
+.brand .brand-word{font-family:var(--head);font-size:20px;font-weight:700;color:#fff;letter-spacing:0.02em;}
+.brand .brand-word span{color:var(--accent);}
+.nav-links{display:flex;gap:4px;align-items:center;}
+.nav-link{font-family:var(--head);font-size:15px;font-weight:500;color:#cfcfe4;cursor:pointer;padding:8px 14px;border-radius:8px;transition:all .15s;}
+.nav-link:hover{color:#fff;background:rgba(255,255,255,0.08);}
+.nav-link.active{color:#fff;background:rgba(255,255,255,0.08);}
+.admin-btn{font-family:var(--head);background:none;border:1px solid transparent;color:var(--muted);font-size:14px;font-weight:500;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all 0.15s;}
+.admin-btn:hover{background:rgba(255,255,255,0.08);color:#fff;}
+.admin-btn.active{background:rgba(255,255,255,0.08);color:#fff;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+/* ===== SPLASH (intro hero on entry) ===== */
+.splash{position:relative;height:calc(100vh - 64px);min-height:460px;display:flex;align-items:center;justify-content:center;overflow:hidden;
+  background:linear-gradient(135deg,#15152a 0%,#0b0b16 55%,#101024 100%);}
+.splash::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(115deg,transparent 0 46px,rgba(124,111,247,0.05) 46px 47px);pointer-events:none;}
+.splash::after{content:'';position:absolute;top:-30%;left:50%;transform:translateX(-50%);width:760px;height:760px;background:radial-gradient(circle,rgba(124,111,247,0.20),transparent 62%);pointer-events:none;}
+.splash-bg{position:absolute;inset:0;background-size:cover;background-position:center;z-index:1;}
+.splash-ov{position:absolute;inset:0;z-index:1;display:none;background:linear-gradient(180deg,rgba(8,8,16,0.45) 0%,rgba(8,8,16,0.72) 100%);}
+.splash.has-img .splash-ov{display:block;}
+.splash-inner{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;text-align:center;padding:1rem;animation:fadeUp .7s ease both;}
+.splash-img{max-height:230px;max-width:min(82vw,580px);width:auto;display:block;filter:drop-shadow(0 12px 44px rgba(124,111,247,.35));}
+.splash-mark{display:flex;flex-direction:column;align-items:center;gap:20px;}
+.splash-mark svg{filter:drop-shadow(0 12px 44px rgba(124,111,247,.4));}
+.splash-word{font-family:var(--head);font-size:clamp(40px,8vw,76px);font-weight:700;color:#fff;line-height:1;letter-spacing:.02em;}
+.splash-word span{color:var(--accent);}
+.splash-chevron{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);cursor:pointer;color:var(--accent);z-index:2;opacity:.85;animation:chevBounce 1.9s ease-in-out infinite;}
+.splash-chevron:hover{opacity:1;}
+.splash-chevron svg{display:block;}
+@keyframes chevBounce{0%,100%{transform:translate(-50%,0);}50%{transform:translate(-50%,12px);}}
+@media(max-width:680px){.splash-mark svg{width:100px;height:100px;}}
+
+/* ===== TOURNAMENT GALLERY (home) ===== */
+.home{max-width:1180px;margin:0 auto;padding:2.5rem 2.5rem 4rem;}
+.tour-heading{font-family:var(--head);font-size:34px;font-weight:700;color:#fff;letter-spacing:.01em;margin-bottom:1.5rem;display:flex;align-items:center;gap:12px;}
+.tour-heading::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,var(--accent),transparent);border-radius:2px;}
+.tour-gallery{display:flex;flex-direction:column;gap:20px;}
+
+.tcard{position:relative;height:200px;border-radius:16px;overflow:hidden;cursor:pointer;border:1px solid var(--border);background:var(--surface2);
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;animation:fadeUp .5s ease both;}
+.tcard:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 12px 34px -12px rgba(124,111,247,.55);}
+.tcard-bg{position:absolute;inset:0;background-size:cover;background-position:center;}
+/* fallback diagonal pattern when no banner image */
+.tcard-bg.fallback{background:linear-gradient(135deg,#1a1a30 0%,#0e0e1c 60%,#15152a 100%);}
+.tcard-bg.fallback::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(115deg,transparent 0 38px,rgba(124,111,247,0.06) 38px 39px);}
+.tcard-bg.fallback::after{content:'';position:absolute;top:-45%;right:-6%;width:420px;height:420px;background:radial-gradient(circle,rgba(124,111,247,0.22),transparent 65%);}
+.tcard-overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,8,16,.78) 0%,rgba(8,8,16,.32) 45%,rgba(8,8,16,.12) 100%);}
+.tcard-status{position:absolute;top:16px;left:16px;z-index:3;display:inline-flex;align-items:center;gap:7px;font-family:var(--head);font-weight:600;font-size:12px;padding:5px 13px;border-radius:20px;letter-spacing:.04em;color:#fff;text-transform:uppercase;}
+.tcard-status .dot{width:7px;height:7px;border-radius:50%;background:#fff;}
+.tcard-status.ongoing{background:var(--accent);}
+.tcard-status.ongoing .dot{animation:pulse 1.6s ease-in-out infinite;}
+.tcard-status.finished{background:rgba(80,80,110,.85);}
+.tcard-status.upcoming{background:var(--blue);}
+.tcard-label{position:absolute;left:0;bottom:0;z-index:3;background:var(--accent);color:#fff;padding:12px 46px 12px 22px;
+  clip-path:polygon(0 0, 100% 0, calc(100% - 26px) 100%, 0 100%);max-width:78%;}
+.tcard-name{font-family:var(--head);font-size:22px;font-weight:700;line-height:1.1;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tcard-dates{font-size:12px;font-weight:500;opacity:.92;display:flex;align-items:center;gap:6px;margin-top:3px;}
+.tcard-go{position:absolute;right:18px;bottom:16px;z-index:3;font-family:var(--head);font-size:13px;font-weight:600;color:#fff;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.25);padding:6px 14px;border-radius:20px;backdrop-filter:blur(4px);}
+.tcard:hover .tcard-go{background:var(--accent);border-color:var(--accent);}
+
+/* add-tournament card (admin only) */
+.tcard-add{height:120px;border:2px dashed var(--border2);border-radius:16px;display:flex;align-items:center;justify-content:center;gap:10px;
+  color:var(--muted);font-family:var(--head);font-weight:600;font-size:16px;cursor:pointer;background:var(--surface);transition:all .15s;}
+.tcard-add:hover{border-color:var(--accent);color:var(--accent);}
+.home-empty{text-align:center;padding:4rem 2rem;color:var(--muted);}
+
+/* STATS HEADER */
+.stats-header{padding:1.5rem 2.5rem 0;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.stats-back{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:var(--head);font-size:13px;font-weight:600;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all .15s;}
+.stats-back:hover{border-color:var(--accent);color:var(--accent);}
+.stats-title{font-family:var(--head);font-size:22px;font-weight:700;color:#fff;}
+.stats-title span{color:var(--accent);}
+.stats-bracket-btn{margin-left:auto;background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:var(--head);font-size:13px;font-weight:600;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all .15s;}
+.stats-bracket-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* STAGE TABS */
+.stage-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 2.5rem;display:flex;gap:4px;overflow-x:auto;overflow-y:hidden;margin-top:1rem;}
+.stage-tab{font-family:var(--head);padding:14px 20px;font-size:15px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:color 0.15s;margin-bottom:-1px;}
+.stage-tab:hover{color:var(--text);}
+.stage-tab.active{color:#fff;border-bottom-color:var(--accent);}
+
+/* VIEW TABS */
+.view-bar{padding:1.5rem 2.5rem 0;display:flex;gap:8px;max-width:1400px;margin:0 auto;}
+.view-tab{font-family:var(--head);padding:9px 20px;font-size:15px;font-weight:500;color:var(--muted);cursor:pointer;border-radius:10px 10px 0 0;border:1px solid transparent;border-bottom:none;transition:all 0.15s;}
+.view-tab:hover{color:var(--text);}
+.view-tab.active{color:#fff;background:var(--surface);border-color:var(--border);}
+
+/* MAIN */
+.main{padding:0 2.5rem 2rem;max-width:1400px;margin:0 auto;}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:0 14px 14px 14px;padding:1.5rem;display:none;}
+.panel.show{display:block;animation:panelIn .35s cubic-bezier(.22,.61,.36,1) both;}
+@keyframes panelIn{from{opacity:0;transform:translateY(10px) scale(.995);}to{opacity:1;transform:translateY(0) scale(1);}}
+
+/* SUMMARY */
+.summary-bar{display:flex;gap:24px;flex-wrap:wrap;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:16px 24px;margin-bottom:1.5rem;}
+.sum-item .sum-val{font-family:var(--head);font-size:26px;font-weight:700;color:#fff;}
+.sum-item .sum-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;}
+
+/* MAP GRID */
+.map-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+@media(max-width:900px){.map-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.map-grid{grid-template-columns:1fr;}}
+.map-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:border-color 0.15s,transform .15s;animation:fadeUp .4s ease both;}
+.map-card:hover{border-color:var(--accent);transform:translateY(-3px);}
+.map-card.empty-slot{opacity:.55;}
+.map-card-head{padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
+.slot-badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;letter-spacing:0.05em;flex-shrink:0;cursor:pointer;}
+.map-card-title{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
+.map-card-stats{padding:10px 14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;}
+.cs-val{font-family:var(--head);font-size:17px;font-weight:600;color:#fff;}
+.cs-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px;}
+.map-card-players{padding:0 14px 10px;}
+.tp-row{display:grid;grid-template-columns:20px minmax(0,1fr) 64px 50px 84px;align-items:center;gap:6px;padding:5px 0;border-top:1px solid var(--border);font-size:12px;}
+.tp-rank{font-weight:700;text-align:left;}
+.tp-name{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tp-score{color:var(--accent);font-weight:600;font-size:11px;text-align:right;font-variant-numeric:tabular-nums;}
+.tp-acc{color:#fff;font-size:11px;text-align:right;font-variant-numeric:tabular-nums;}
+.tp-mods{font-size:10px;display:flex;gap:2px;flex-wrap:wrap;justify-content:flex-end;}
+.empty-note{padding:14px;font-size:12px;color:var(--muted);text-align:center;}
+
+/* LEADERBOARD */
+.lb-section{margin-bottom:2rem;animation:fadeUp .4s ease both;}
+.lb-head{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.lb-mapname{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lb-table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;}
+.lb-table th{background:var(--surface2);color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap;}
+.lb-table th:hover{color:var(--text);}
+.lb-table th.r{text-align:right;}
+.lb-table th .sort-arrow{font-size:9px;margin-left:3px;opacity:.6;}
+.lb-table td{padding:7px 12px;border-bottom:1px solid var(--border);overflow:hidden;}
+.lb-table tr:last-child td{border-bottom:none;}
+.lb-table tr:hover td{background:var(--surface2);}
+.players-table td.rc, .lb-table td.rc{width:32px;overflow:visible;text-overflow:initial;white-space:nowrap;font-weight:700;color:var(--muted);}
+.rc.r1{color:var(--gold)}.rc.r2{color:var(--silver)}.rc.r3{color:var(--bronze)}
+.players-table td.rc.r1,.lb-table td.rc.r1{color:var(--gold);}
+.players-table td.rc.r2,.lb-table td.rc.r2{color:var(--silver);}
+.players-table td.rc.r3,.lb-table td.rc.r3{color:var(--bronze);}
+.tp-rank.r1{color:var(--gold);}.tp-rank.r2{color:var(--silver);}.tp-rank.r3{color:var(--bronze);}
+.rc.r1,.tp-rank.r1{text-shadow:0 0 8px rgba(245,200,66,0.5);}
+.rc.r2,.tp-rank.r2{text-shadow:0 0 8px rgba(176,184,200,0.4);}
+.rc.r3,.tp-rank.r3{text-shadow:0 0 8px rgba(205,127,50,0.45);}
+.pc{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sc{font-weight:700;color:#fff;text-align:right;font-variant-numeric:tabular-nums;}
+.ac{text-align:right;font-variant-numeric:tabular-nums;color:#fff;}
+.ah{color:#fff}.am{color:#fff}.al{color:#fff;}
+.mc-cell{text-align:right;}
+.mod-pills-cell{text-align:right;white-space:normal;line-height:1.6;}
+
+/* MOD PILLS */
+.mp{display:inline-block;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;margin:1px;}
+.mp-NM{background:rgba(111,207,111,.2);color:var(--nm);}
+.mp-HD{background:rgba(232,200,74,.2);color:var(--hd);}
+.mp-HR{background:rgba(224,80,80,.2);color:var(--hr);}
+.mp-DT{background:rgba(155,93,229,.2);color:var(--dt);}
+.mp-NC{background:rgba(155,93,229,.35);color:#c8a0ff;}
+.mp-FL{background:rgba(38,198,218,.2);color:var(--fl);}
+.mp-PR{background:rgba(74,154,222,.2);color:var(--pr);}
+.mp-FM{background:rgba(86,200,200,.2);color:var(--fm);}
+.mp-EZ{background:rgba(100,200,100,.15);color:#90ee90;}
+.mp-XX{background:rgba(150,150,150,.1);color:#888;}
+
+/* SLOT COLORS */
+.s-nm{background:rgba(111,207,111,.15);color:var(--nm);}
+.s-hd{background:rgba(232,200,74,.15);color:var(--hd);}
+.s-hr{background:rgba(224,80,80,.15);color:var(--hr);}
+.s-dt{background:rgba(155,93,229,.15);color:var(--dt);}
+.s-fl{background:rgba(38,198,218,.15);color:var(--fl);}
+.s-tb{background:rgba(255,110,199,.16);color:var(--tb);}
+.s-pr{background:rgba(74,154,222,.15);color:var(--pr);}
+.s-fm{background:rgba(86,200,200,.15);color:var(--fm);}
+.s-xx{background:rgba(150,150,150,.15);color:#aaa;}
+
+/* PLAYER STATS TABLE */
+.players-table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;}
+.players-table th{background:var(--surface2);color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap;}
+.players-table th:hover{color:var(--text);}
+.players-table th.r{text-align:right;}
+.players-table th .sort-arrow{font-size:9px;margin-left:3px;opacity:.6;}
+.players-table td{padding:7px 12px;border-bottom:1px solid var(--border);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.players-table tr:last-child td{border-bottom:none;}
+.players-table tr:hover td{background:var(--surface2);}
+.players-table .r{text-align:right;font-variant-numeric:tabular-nums;}
+.players-table tbody tr{animation:fadeUp .4s ease both;}
+
+/* EMPTY */
+.empty{text-align:center;padding:4rem 2rem;color:var(--muted);font-size:15px;animation:fadeIn .3s ease both;}
+.empty p{margin-top:8px;font-size:13px;}
+
+/* ===== ADMIN PANEL ===== */
+.admin-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;display:none;align-items:flex-start;justify-content:flex-end;padding:56px 0 0;}
+.admin-overlay.show{display:flex;}
+.admin-panel{background:var(--surface);border-left:1px solid var(--border);width:420px;height:calc(100vh - 56px);overflow-y:auto;display:flex;flex-direction:column;}
+.admin-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.admin-header h2{font-size:16px;font-weight:700;color:#fff;}
+.close-btn{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px;}
+.close-btn:hover{color:var(--text);}
+.admin-body{padding:1.25rem 1.5rem;flex:1;}
+
+.admin-section{margin-bottom:1.5rem;}
+.admin-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.admin-section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.editing-chip{font-family:var(--head);font-size:11px;font-weight:600;color:var(--accent);background:rgba(124,111,247,.12);border:1px solid rgba(124,111,247,.3);padding:2px 9px;border-radius:12px;text-transform:none;letter-spacing:0;}
+
+.stage-select-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.stage-pill{padding:5px 12px;font-size:12px;font-weight:600;border-radius:20px;border:1px solid var(--border2);color:var(--muted);cursor:pointer;transition:all 0.15s;}
+.stage-pill:hover{border-color:var(--accent);color:var(--accent);}
+.stage-pill.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.stage-pill.vis-on{background:rgba(102,187,106,0.15);border-color:var(--green);color:var(--green);}
+.stage-pill.vis-off{background:transparent;border-color:var(--border);color:var(--muted);opacity:.6;text-decoration:line-through;}
+
+/* tournament rows in admin */
+.adm-tour-list{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
+.adm-tour-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color .15s;}
+.adm-tour-item.active{border-color:var(--accent);background:rgba(124,111,247,.08);}
+.adm-tour-name{flex:1;min-width:0;font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.adm-tour-badge{font-size:10px;color:var(--muted);}
+.adm-tour-open{background:none;border:1px solid var(--border2);color:var(--muted);font-size:10px;padding:2px 7px;border-radius:4px;cursor:pointer;flex-shrink:0;}
+.adm-tour-open:hover{border-color:var(--accent);color:var(--accent);}
+
+.field-label{font-size:12px;color:var(--muted);margin-bottom:6px;}
+input[type=text],input[type=url]{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;margin-bottom:10px;}
+input[type=text]:focus,input[type=url]:focus{border-color:var(--accent);}
+input::placeholder{color:var(--muted);}
+select{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;margin-bottom:10px;cursor:pointer;}
+select:focus{border-color:var(--accent);}
+.btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;transition:background 0.15s;width:100%;}
+.btn:hover{background:var(--accent2);}
+.btn.danger{background:#b71c1c;}
+.btn.danger:hover{background:#d32f2f;}
+.btn.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border2);}
+.btn.secondary:hover{background:var(--surface3);}
+.fetch-status{font-size:12px;color:var(--muted);margin-top:6px;min-height:16px;}
+.fetch-status.ok{color:var(--green);}
+.fetch-status.err{color:var(--red);}
+
+/* FILE UPLOAD */
+.file-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;}
+.file-btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-size:13px;font-weight:600;padding:9px 14px;border-radius:8px;cursor:pointer;transition:all .15s;flex:1;justify-content:center;}
+.file-btn:hover{border-color:var(--accent);color:var(--accent);}
+.file-btn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.img-preview{width:100%;height:120px;border-radius:8px;border:1px solid var(--border);background:var(--surface2) center/cover no-repeat;margin-bottom:10px;display:none;}
+.img-preview.show{display:block;}
+.logo-preview{height:48px;width:auto;border-radius:6px;border:1px solid var(--border);display:none;}
+.logo-preview.show{display:block;}
+
+/* MATCH LIST */
+.match-list{display:flex;flex-direction:column;gap:6px;}
+.match-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:10px;}
+.match-info{flex:1;min-width:0;}
+.match-name{font-size:12px;font-weight:600;color:var(--text);}
+.match-id{font-size:11px;color:var(--muted);}
+.match-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 6px;}
+.match-del:hover{color:var(--red);}
+
+/* MAP ORDER EDITOR */
+.map-order-list{display:flex;flex-direction:column;gap:4px;}
+.map-order-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:10px;cursor:grab;user-select:none;}
+.map-order-item.dragging{opacity:0.4;}
+.map-order-item.drag-over{border-color:var(--accent);}
+.drag-handle{color:var(--muted);font-size:14px;flex-shrink:0;}
+.map-order-slot{flex-shrink:0;}
+.map-order-name{flex:1;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.slot-edit-btn{background:none;border:1px solid var(--border2);color:var(--muted);font-size:10px;padding:2px 7px;border-radius:4px;cursor:pointer;}
+.slot-edit-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* SLOT PICKER MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;display:none;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:1.5rem;width:340px;}
+.modal h3{font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;}
+.modal-sub{font-size:12px;color:var(--muted);margin-bottom:1rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.slot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:1rem;}
+.slot-opt{padding:6px 4px;text-align:center;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;border:1px solid transparent;transition:all 0.1s;}
+.slot-opt:hover{opacity:0.85;}
+.slot-opt.selected{border-color:#fff;}
+.modal-actions{display:flex;gap:8px;}
+.modal-actions button{flex:1;padding:8px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:none;}
+.modal-cancel{background:var(--surface2);color:var(--text);}
+.modal-ok{background:var(--accent);color:#fff;}
+
+/* DANGER ZONE */
+.danger-box{background:rgba(183,28,28,0.1);border:1px solid rgba(239,83,80,0.3);border-radius:8px;padding:1rem;}
+.danger-box p{font-size:12px;color:#ef9a9a;margin-bottom:10px;}
+
+/* PLAYER PROFILE MODAL */
+.pc.clickable{cursor:pointer;transition:color .15s;}
+.pc.clickable:hover{color:var(--accent);}
+.profile-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:300;display:none;align-items:center;justify-content:center;padding:2rem;}
+.profile-overlay.show{display:flex;animation:fadeIn .2s ease both;}
+.profile-modal{background:var(--surface);border:1px solid var(--border2);border-radius:14px;width:640px;max-width:100%;max-height:85vh;display:flex;flex-direction:column;animation:fadeUp .3s ease both;}
+.profile-head{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;}
+.profile-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;flex-shrink:0;background-size:cover;background-position:center;}
+.profile-avatar.has-img{background-color:var(--surface);border:1px solid var(--border2);}
+.profile-name-link{color:inherit;text-decoration:none;}
+.profile-name-link:hover{text-decoration:underline;color:var(--accent);}
+.profile-name{font-size:20px;font-weight:800;color:#fff;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.profile-stage{font-size:12px;color:var(--muted);}
+.profile-body{padding:1.25rem 1.5rem;overflow-y:auto;}
+.profile-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.25rem;}
+.pstat{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;}
+.pstat-val{font-size:18px;font-weight:700;color:#fff;}
+.pstat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:3px;}
+.profile-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin:0 0 10px;}
+.profile-scores{width:100%;border-collapse:collapse;font-size:13px;}
+.profile-scores th{color:var(--muted);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;padding:6px 10px;text-align:left;border-bottom:1px solid var(--border);}
+.profile-scores th.r{text-align:right;}
+.profile-scores td{padding:6px 10px;border-bottom:1px solid var(--border);}
+.profile-scores tr:last-child td{border-bottom:none;}
+.profile-scores tr{animation:fadeUp .35s ease both;}
+.profile-scores .r{text-align:right;font-variant-numeric:tabular-nums;color:#fff;}
+.profile-close{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:4px;line-height:1;}
+.profile-close:hover{color:var(--text);}
+
+/* PLAYER SEARCH */
+.player-search-wrap{margin-bottom:8px;display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:0 12px;max-width:320px;height:38px;transition:border-color .15s;}
+.player-search-wrap:focus-within{border-color:var(--accent);}
+.player-search-wrap .player-search{flex:1 1 auto;width:auto;min-width:0;height:100%;background:transparent;border:0;margin:0;padding:0;color:var(--text);font-size:13px;font-family:inherit;line-height:38px;outline:none;box-shadow:none;appearance:none;}
+.player-search-wrap .player-search:focus{border:0;}
+.player-search::placeholder{color:var(--muted);}
+.player-search-icon{color:var(--accent);font-size:14px;flex-shrink:0;line-height:1;display:flex;align-items:center;pointer-events:none;}
+.search-count{font-size:12px;color:var(--muted);margin:0 0 14px;}
+
+/* FLIP sort: suppress entrance animation while reordering */
+.players-table.no-entrance tbody tr{animation:none;}
+.players-table tbody tr td{will-change:transform;}
+
+/* ===== MATCHES VIEW ===== */
+.match-cards{display:flex;flex-direction:column;gap:10px;}
+.mm-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:border-color .15s,transform .15s;animation:fadeUp .4s ease both;}
+.mm-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+.mm-card-main{flex:1;min-width:0;}
+.mm-card-name{font-family:var(--head);font-size:16px;font-weight:600;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mm-card-meta{font-size:12px;color:var(--muted);margin-top:3px;}
+.mm-card-result{font-family:var(--head);font-weight:700;font-size:15px;white-space:nowrap;display:flex;align-items:center;gap:8px;}
+.mm-card-go{color:var(--muted);font-size:18px;flex-shrink:0;}
+.mm-card:hover .mm-card-go{color:var(--accent);}
+
+/* match detail */
+.mm-detail{animation:fadeUp .4s ease both;}
+.mm-back{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:var(--head);font-size:13px;font-weight:600;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all .15s;margin-bottom:1.25rem;}
+.mm-back:hover{border-color:var(--accent);color:var(--accent);}
+.mm-scoreboard{display:flex;align-items:center;justify-content:center;gap:22px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:1.5rem;flex-wrap:wrap;}
+.mm-team{font-family:var(--head);font-weight:700;font-size:18px;display:flex;align-items:center;gap:10px;}
+.mm-team.win{text-shadow:0 0 14px currentColor;}
+.mm-team-tally{font-size:34px;line-height:1;}
+.mm-vs{font-family:var(--head);color:var(--muted);font-size:14px;font-weight:600;}
+.mm-winner-line{text-align:center;font-size:12px;color:var(--muted);margin:-8px 0 1.25rem;text-transform:uppercase;letter-spacing:.06em;}
+.team-red{color:var(--red);} .team-blue{color:var(--blue);}
+.mm-maps{display:flex;flex-direction:column;gap:8px;}
+.mm-map{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:grid;grid-template-columns:46px minmax(0,1fr) auto;align-items:center;gap:12px;animation:fadeUp .4s ease both;}
+.mm-map-name{font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mm-map-name .mm-sub{font-size:11px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mm-map-result{display:flex;align-items:center;gap:10px;font-family:var(--head);font-weight:600;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.mm-side{display:flex;flex-direction:column;align-items:flex-end;line-height:1.15;}
+.mm-side.win{font-weight:700;}
+.mm-side .mm-side-sub{font-size:10px;color:var(--muted);font-weight:500;}
+.mm-dash{color:var(--muted);}
+.mm-empty{text-align:center;padding:4rem 2rem;color:var(--muted);}
+.mm-team-name{font-size:18px;}
+.mm-team{gap:12px;}
+
+/* match-detail: per-map result-screen scoreboards */
+.mm-mapcard{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px;animation:fadeUp .4s ease both;}
+.mm-mapcard-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.mm-mapcard-head .mm-map-name{font-size:14px;font-weight:600;color:#fff;}
+.mm-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.mm-col{display:flex;flex-direction:column;gap:5px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px;}
+.mm-col.win{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;}
+.mm-pl{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;align-items:center;gap:8px;font-size:12px;padding:3px 4px;border-radius:6px;}
+.mm-pl-name{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mm-pl.team-red .mm-pl-name{color:var(--red);}
+.mm-pl.team-blue .mm-pl-name{color:var(--blue);}
+.mm-pl.mm-top .mm-pl-name{color:var(--accent);}
+.mm-pl-acc{color:var(--muted);font-variant-numeric:tabular-nums;}
+.mm-pl-score{font-family:var(--head);font-weight:700;font-variant-numeric:tabular-nums;color:#fff;}
+.mm-pl-mods{display:flex;gap:3px;justify-content:flex-end;}
+.mm-pl-empty{color:var(--muted);font-size:12px;text-align:center;padding:4px;}
+.mm-manual{color:var(--accent);font-size:10px;}
+.mm-map-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border);}
+.mm-foot-side{display:flex;flex-direction:column;line-height:1.2;}
+.mm-foot-side.team-blue{align-items:flex-end;}
+.mm-foot-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+.mm-foot-val{font-family:var(--head);font-weight:700;font-size:15px;font-variant-numeric:tabular-nums;}
+.mm-foot-side.team-red .mm-foot-val{color:var(--red);}
+.mm-foot-side.team-blue .mm-foot-val{color:var(--blue);}
+.mm-foot-margin{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;text-align:center;flex:1;}
+
+/* in-match add-score form (admin only) */
+.mm-addbox{margin-top:1.5rem;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+.mm-addbox-title{font-family:var(--head);font-weight:600;font-size:13px;color:var(--accent);margin-bottom:10px;}
+.mm-addgrid{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.mm-addgrid select,.mm-addgrid input{background:var(--surface);border:1px solid var(--border2);color:var(--text);border-radius:7px;padding:7px 9px;font-size:12px;}
+.mm-addgrid #mm-add-map{flex:1 1 220px;min-width:160px;}
+.mm-addgrid #mm-add-player{flex:1 1 130px;min-width:110px;}
+.mm-addgrid #mm-add-score,.mm-addgrid #mm-add-acc{width:90px;}
+.mm-addgrid #mm-add-mods{width:120px;}
+.mm-addgrid #mm-add-team{width:80px;}
+
+/* draggable match rows in admin */
+.match-item[draggable]{cursor:grab;}
+.match-item.dragging{opacity:0.4;}
+.match-item.drag-over{border-color:var(--accent);}
+
+/* TOURNAMENT BRACKET (Challonge embed, recolored) */
+.bracket-page{padding:1.5rem 2rem 3rem;max-width:100%;}
+.bracket-top{display:flex;align-items:center;gap:14px;margin-bottom:1.25rem;flex-wrap:wrap;}
+.bracket-top h1{font-size:22px;font-weight:800;color:#fff;}
+.bracket-back{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-size:13px;font-weight:600;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all .15s;}
+.bracket-back:hover{border-color:var(--accent);color:var(--accent);}
+.bracket-hint{font-size:12px;color:var(--muted);}
+.bracket-embed-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:8px;overflow:hidden;animation:fadeUp .4s ease both;}
+/* recolor challonge's orange accents toward our purple; keep grey boxes/white text */
+.bracket-embed{width:100%;min-height:600px;height:78vh;border:0;border-radius:8px;display:block;
+  filter:hue-rotate(248deg) saturate(1.15);}
+.bracket-empty{text-align:center;padding:4rem 2rem;color:var(--muted);}
+.bracket-open-link{font-size:12px;color:var(--accent);text-decoration:none;margin-left:auto;}
+.bracket-open-link:hover{text-decoration:underline;}
+
+/* MAPPOOL PAGE */
+.mp-pool{display:flex;flex-direction:column;gap:30px;padding:1.25rem 0;}
+.mp-row{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;}
+.mp-card{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--border);width:380px;max-width:100%;min-height:172px;display:flex;animation:fadeUp .4s ease both;box-shadow:0 4px 18px rgba(0,0,0,.25);}
+.mp-card-bg{position:absolute;inset:0;background-size:cover;background-position:center;background-color:var(--surface2);transition:transform .5s ease;}
+.mp-card:hover .mp-card-bg{transform:scale(1.02);}
+.mp-card-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,12,20,.25) 0%,rgba(10,12,20,.66) 58%,rgba(10,12,20,.9) 100%);}
+.mp-card-overlay{position:relative;z-index:1;display:flex;flex-direction:column;justify-content:space-between;gap:10px;padding:16px;width:100%;}
+.mp-card-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.mp-chip{font-family:var(--head);font-size:12px;font-weight:600;color:#fff;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:3px 10px;backdrop-filter:blur(2px);}
+.mp-chip.mp-sr{background:rgba(124,92,255,.35);border-color:rgba(124,92,255,.5);}
+.mp-card-mid{margin-top:auto;}
+.mp-title{font-family:var(--head);font-weight:700;font-size:22px;color:#fff;line-height:1.18;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-shadow:0 1px 8px rgba(0,0,0,.7);}
+.mp-sub{font-size:14px;color:rgba(255,255,255,.82);margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mp-card-foot{display:flex;flex-direction:column;gap:5px;}
+.mp-diffline{font-family:var(--head);font-size:13px;font-weight:600;color:rgba(255,255,255,.85);letter-spacing:.02em;border-top:1px solid rgba(255,255,255,.12);padding-top:8px;}
+.mp-card.mp-empty{min-height:120px;background:var(--surface2);border-style:dashed;border-color:var(--border2);box-shadow:none;opacity:.72;}
+.mp-card.mp-empty:hover{opacity:1;}
+.mp-card.mp-empty .mp-card-overlay{justify-content:flex-start;}
+.mp-empty-label{font-family:var(--head);font-weight:600;font-size:16px;font-style:italic;color:var(--muted);}
+
+/* admin: mappool covers list */
+.mpc-list{display:flex;flex-direction:column;gap:8px;}
+.mpc-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;}
+.mpc-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.mpc-name{font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;}
+.mpc-ok{font-size:11px;color:var(--accent);font-weight:600;white-space:nowrap;}
+.mpc-row{display:flex;gap:6px;align-items:center;}
+.mpc-input{flex:1;min-width:0;background:var(--surface);border:1px solid var(--border2);color:var(--text);border-radius:6px;padding:6px 8px;font-size:12px;}
+
+/* TEAMS PAGE */
+.teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;padding:1.25rem 0;}
+.team-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;overflow:hidden;animation:fadeUp .4s ease both;}
+.team-card-head{display:flex;align-items:center;gap:10px;padding:14px 16px;background:linear-gradient(180deg,rgba(124,92,255,.16),transparent);border-bottom:1px solid var(--border);}
+.team-name{font-family:var(--head);font-weight:700;font-size:18px;color:#fff;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.team-count{font-size:12px;color:var(--muted);white-space:nowrap;}
+.team-edit-btn{background:var(--surface);border:1px solid var(--border2);color:var(--text);font-size:12px;font-weight:600;padding:5px 10px;border-radius:7px;cursor:pointer;transition:all .15s;}
+.team-edit-btn:hover{border-color:var(--accent);color:var(--accent);}
+.team-del-btn{color:#ef5350;}
+.team-del-btn:hover{border-color:#ef5350;color:#ef5350;}
+.team-players{display:flex;flex-direction:column;gap:2px;padding:8px;}
+.team-empty{font-size:12px;color:var(--muted);padding:14px;text-align:center;}
+.team-player{display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:10px;transition:background .15s;}
+.team-player:hover{background:rgba(255,255,255,.04);}
+.pl-avatar{width:46px;height:46px;border-radius:50%;background-size:cover;background-position:center;background-color:var(--surface);border:1px solid var(--border2);flex-shrink:0;}
+.pl-info{flex:1;min-width:0;}
+.pl-top{display:flex;align-items:baseline;gap:8px;}
+.pl-droid{font-family:var(--head);font-weight:600;font-size:15px;color:#cdb6ff;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+a.pl-droid:hover{text-decoration:underline;color:var(--accent);}
+.pl-rank{margin-left:auto;font-family:var(--head);font-weight:700;font-size:13px;color:var(--accent);white-space:nowrap;}
+.pl-discord{font-size:12px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.team-add-card{display:flex;align-items:center;justify-content:center;min-height:120px;border:2px dashed var(--border2);border-radius:14px;color:var(--muted);font-family:var(--head);font-weight:600;font-size:15px;cursor:pointer;transition:all .15s;}
+.team-add-card:hover{border-color:var(--accent);color:var(--accent);background:rgba(124,92,255,.06);}
+
+/* team editor modal */
+.team-modal{width:560px;max-width:94vw;max-height:88vh;overflow-y:auto;}
+#team-name-input{width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:7px;padding:9px 10px;font-size:14px;}
+.tp-edit-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px;margin-bottom:6px;}
+.tp-edit-row input{background:var(--surface);border:1px solid var(--border2);color:var(--text);border-radius:6px;padding:6px 8px;font-size:12px;}
+.tp-e-prev{width:32px;height:32px;border-radius:50%;flex-shrink:0;background-size:cover;background-position:center;background-color:var(--surface);border:1px solid var(--border2);}
+.tp-e-droid{flex:1 1 150px;min-width:120px;}
+.tp-e-uid{width:90px;}
+.tp-e-fetch{background:var(--surface)!important;border:1px solid var(--accent)!important;color:var(--accent)!important;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px;font-family:var(--head);font-weight:600;}
+.tp-e-fetch:hover{background:var(--accent)!important;color:#fff!important;}
+.tp-e-status{flex:1 1 100%;font-size:11px;color:var(--muted);min-height:0;padding-left:2px;}
+.tp-e-status.ok{color:#66bb6a;}
+.tp-e-status.err{color:#ef5350;}
+.tp-e-rank{width:90px;}
+.tp-e-discord{flex:1 1 140px;min-width:120px;}
+.tp-e-avatar{flex:1 1 100%;}
+.tp-e-profile{flex:1 1 100%;}
+.tp-e-del{background:var(--surface)!important;border:1px solid #ef535044!important;color:#ef5350!important;border-radius:6px;width:30px;cursor:pointer;font-size:12px;}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="brand" id="brand" onclick="goHome()"></div>
+  <div class="nav-links">
+    <div class="nav-link" id="nl-home" onclick="goHome()">Home</div>
+    <div class="nav-link" id="nl-mappool" onclick="openMappool()">Mappool</div>
+    <div class="nav-link" id="nl-teams" onclick="openTeams()">Teams</div>
+    <button class="admin-btn" id="admin-toggle-btn" onclick="toggleAdmin()" style="display:none;">⚙ Admin</button>
+  </div>
+</div>
+
+<!-- HOME: SPLASH + TOURNAMENT GALLERY -->
+<div id="view-home">
+  <section class="splash" id="splash-section">
+    <div class="splash-bg" id="splash-bg"></div>
+    <div class="splash-ov"></div>
+    <div class="splash-inner" id="splash-inner"></div>
+    <div class="splash-chevron" onclick="scrollToGallery()" title="Scroll to tournaments">
+      <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+    </div>
+  </section>
+  <div class="home">
+    <h1 class="tour-heading" id="gallery-anchor">Tournaments!</h1>
+    <div class="tour-gallery" id="tour-gallery"></div>
+  </div>
+</div>
+
+<!-- STATS VIEW -->
+<div id="view-stats" style="display:none;">
+
+  <!-- STATS HEADER -->
+  <div class="stats-header">
+    <button class="stats-back" onclick="goHome()">← Tournaments</button>
+    <div class="stats-title" id="stats-title"></div>
+    <button class="stats-bracket-btn" onclick="openBracket()">Bracket</button>
+  </div>
+
+  <!-- STAGE BAR -->
+  <div class="stage-bar" id="stage-bar"></div>
+
+  <!-- VIEW TABS -->
+  <div class="view-bar">
+    <div class="view-tab active" id="vt-mappool" onclick="switchView('mappool')">Mappool Stats</div>
+    <div class="view-tab" id="vt-leaderboard" onclick="switchView('leaderboard')">Player Leaderboard</div>
+    <div class="view-tab" id="vt-players" onclick="switchView('players')">Players</div>
+    <div class="view-tab" id="vt-matches" onclick="switchView('matches')">Matches</div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+    <div class="panel show" id="panel-mappool"></div>
+    <div class="panel" id="panel-leaderboard"></div>
+    <div class="panel" id="panel-players"></div>
+    <div class="panel" id="panel-matches"></div>
+  </div>
+
+</div>
+
+<!-- ADMIN OVERLAY -->
+<div class="admin-overlay" id="admin-overlay" onclick="handleOverlayClick(event)">
+  <div class="admin-panel" id="admin-panel">
+    <div class="admin-header">
+      <h2>⚙ Admin Panel</h2>
+      <button class="close-btn" onclick="toggleAdmin()">✕</button>
+    </div>
+    <div class="admin-body">
+
+      <!-- Site / logo -->
+      <div class="admin-section">
+        <div class="admin-section-title">Site Logo</div>
+        <div class="field-label">Logo shown top-left (replaces the wordmark). Leave empty to use the built-in mark.</div>
+        <img class="logo-preview" id="logo-preview" alt="logo preview">
+        <div class="file-row">
+          <label class="file-btn">📁 Upload logo<input type="file" accept="image/*" onchange="onLogoFile(this)"></label>
+          <button class="btn secondary" style="width:auto;" onclick="removeLogo()">Remove</button>
+        </div>
+      </div>
+
+      <!-- Home background -->
+      <div class="admin-section">
+        <div class="admin-section-title">Home Background</div>
+        <div class="field-label">Full-screen image behind the intro logo on the home page. A dark overlay keeps the logo readable.</div>
+        <div class="img-preview" id="splashbg-preview"></div>
+        <div class="file-row">
+          <label class="file-btn">📁 Upload background<input type="file" accept="image/*" onchange="onSplashBgFile(this)"></label>
+          <button class="btn secondary" style="width:auto;" onclick="removeSplashBg()">Remove</button>
+        </div>
+      </div>
+
+      <!-- Tournaments -->
+      <div class="admin-section">
+        <div class="admin-section-title">Tournaments</div>
+        <div class="field-label">Select one to edit below, or open it on the site.</div>
+        <div class="adm-tour-list" id="adm-tour-list"></div>
+        <button class="btn secondary" onclick="addTournament()">＋ Add Tournament</button>
+      </div>
+
+      <!-- Tournament info (selected) -->
+      <div class="admin-section">
+        <div class="admin-section-title">Tournament Info <span class="editing-chip" id="adm-editing-chip">—</span></div>
+        <div class="field-label">Name (first word is white, the rest takes the accent color)</div>
+        <input type="text" id="meta-name" placeholder="osu!droid 18th Tournament" />
+        <div class="field-label">Tagline / subtitle</div>
+        <input type="text" id="meta-sub" placeholder="Mappool stats, leaderboards and live data…" />
+        <div class="field-label">Format</div>
+        <input type="text" id="meta-format" placeholder="Team VS / 1v1 / 4v4" />
+        <div class="field-label">Status (Ongoing / Finished / Upcoming)</div>
+        <input type="text" id="meta-status" placeholder="Ongoing" />
+        <div class="field-label">Schedule / dates</div>
+        <input type="text" id="meta-dates" placeholder="29/05/2026 – 16/08/2026" />
+        <div class="field-label">Banner image (shown on the home gallery card)</div>
+        <div class="img-preview" id="banner-preview"></div>
+        <div class="file-row">
+          <label class="file-btn">📁 Upload banner<input type="file" accept="image/*" onchange="onBannerFile(this)"></label>
+          <button class="btn secondary" style="width:auto;" onclick="removeBanner()">Remove</button>
+        </div>
+        <button class="btn" onclick="saveTournamentInfo()">Save Tournament Info</button>
+        <div class="fetch-status" id="meta-status-msg"></div>
+      </div>
+
+      <!-- Stage select -->
+      <div class="admin-section">
+        <div class="admin-section-title">Editing Stage</div>
+        <div class="stage-select-row" id="admin-stage-pills"></div>
+      </div>
+
+      <!-- Stage visibility -->
+      <div class="admin-section">
+        <div class="admin-section-title">Visible Stages</div>
+        <div class="field-label">Toggle which stages show up in the stage bar.</div>
+        <div class="stage-select-row" id="admin-stage-visibility"></div>
+      </div>
+
+      <!-- Bracket -->
+      <div class="admin-section">
+        <div class="admin-section-title">Bracket (Challonge)</div>
+        <div class="field-label">Paste this tournament's Challonge URL or slug. The Bracket page embeds it live, recolored to match the site.</div>
+        <input type="text" id="challonge-input" placeholder="https://challonge.com/droiddiscordtour18" />
+        <button class="btn" onclick="saveChallonge()">Save Bracket Link</button>
+        <div class="fetch-status" id="challonge-status"></div>
+      </div>
+
+      <!-- Add match -->
+      <div class="admin-section">
+        <div class="admin-section-title">Add Match</div>
+        <div class="field-label">Match URL or ID</div>
+        <input type="url" id="add-match-input" placeholder="https://osudroid.kansenindex.dev/spectator/match_history?id=109" />
+        <button class="btn" onclick="addMatch()">Load & Add Match</button>
+        <div class="fetch-status" id="fetch-status"></div>
+      </div>
+
+      <!-- Add empty slot -->
+      <div class="admin-section">
+        <div class="admin-section-title">Add Unplayed Slot</div>
+        <div class="field-label">For slots that weren't played (e.g. DT1, HD2) — adds a placeholder to the mappool & order.</div>
+        <div class="slot-grid" id="empty-slot-grid" style="margin-top:8px;"></div>
+      </div>
+
+      <!-- Match list -->
+      <div class="admin-section">
+        <div class="admin-section-title">Matches in Stage</div>
+        <div class="match-list" id="match-list"></div>
+      </div>
+
+      <!-- Map order -->
+      <div class="admin-section">
+        <div class="admin-section-title">Map Order & Slots</div>
+        <div class="map-order-list" id="map-order-list"></div>
+      </div>
+
+      <!-- Mappool covers & stats -->
+      <div class="admin-section">
+        <div class="admin-section-title">Mappool — Covers & Stats</div>
+        <div class="field-label">Paste each map's osu! link (e.g. osu.ppy.sh/beatmapsets/12345#osu/67890). The cover image and stats (SR/BPM/CS/AR/OD/HP) are fetched from osu! and shown on the Mappool page.</div>
+        <div class="mpc-list" id="mpc-list"></div>
+        <div class="fetch-status" id="mpc-status"></div>
+      </div>
+
+      <!-- Manual scores -->
+      <div class="admin-section">
+        <div class="admin-section-title">Manual Scores</div>
+        <div class="field-label">For players who disconnected and are missing from match history. Adds a score to an already-played map of the selected stage.</div>
+        <select id="ms-map"></select>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="ms-player" placeholder="Player name" style="flex:2;">
+          <input type="text" id="ms-score" placeholder="Score" style="flex:1;">
+        </div>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="ms-acc" placeholder="Accuracy % (e.g. 97.5)" style="flex:1;">
+          <input type="text" id="ms-mods" placeholder="Mods e.g. HD PR" style="flex:1;">
+        </div>
+        <select id="ms-match"></select>
+        <button class="btn" onclick="addManualScore()">Add Score</button>
+        <div class="fetch-status" id="ms-status"></div>
+        <div class="match-list" id="ms-list" style="margin-top:10px;"></div>
+      </div>
+
+      <!-- Danger zone -->
+      <div class="admin-section">
+        <div class="admin-section-title">Danger Zone</div>
+        <div class="danger-box">
+          <p>Clear all data for the selected stage of this tournament.</p>
+          <button class="btn danger" onclick="clearStage()" style="margin-bottom:10px;">Clear Stage Data</button>
+          <p>Delete this entire tournament. This cannot be undone.</p>
+          <button class="btn danger" onclick="deleteTournament()">Delete Tournament</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- SLOT PICKER MODAL -->
+<div class="modal-overlay" id="slot-modal">
+  <div class="modal">
+    <h3>Set Slot</h3>
+    <div class="modal-sub" id="slot-modal-mapname"></div>
+    <div class="slot-grid" id="slot-grid"></div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeSlotModal()">Cancel</button>
+      <button class="modal-ok" onclick="confirmSlot()">Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- TEAM EDITOR MODAL -->
+<div class="modal-overlay" id="team-modal" onclick="handleTeamOverlayClick(event)">
+  <div class="modal team-modal">
+    <h3 id="team-modal-title">Edit Team</h3>
+    <div class="field-label">Team name</div>
+    <input type="text" id="team-name-input" placeholder="Team name" />
+    <div class="field-label" style="margin-top:12px;">Players</div>
+    <div id="team-players-edit"></div>
+    <button class="btn secondary" style="margin-top:8px;" onclick="addPlayerRow()">＋ Add player</button>
+    <div class="modal-actions" style="margin-top:1rem;">
+      <button class="modal-cancel" onclick="closeTeamEditor()">Cancel</button>
+      <button class="modal-ok" onclick="saveTeamEditor()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- PLAYER PROFILE MODAL -->
+<div class="profile-overlay" id="profile-modal" onclick="handleProfileOverlayClick(event)">
+  <div class="profile-modal">
+    <div class="profile-head">
+      <div class="profile-avatar" id="profile-avatar"></div>
+      <div style="flex:1;min-width:0;">
+        <div class="profile-name" id="profile-name"></div>
+        <div class="profile-stage" id="profile-stage"></div>
+      </div>
+      <button class="profile-close" onclick="closeProfile()">✕</button>
+    </div>
+    <div class="profile-body" id="profile-body"></div>
+  </div>
+</div>
+
+<!-- BRACKET PAGE -->
+<div id="view-bracket" style="display:none;">
+  <div class="bracket-page">
+    <div class="bracket-top">
+      <button class="bracket-back" onclick="goStats()">← Back to Stats</button>
+      <h1 id="bracket-title">Tournament Bracket</h1>
+      <a class="bracket-open-link" id="bracket-open-link" href="#" target="_blank" rel="noopener">Open on Challonge ↗</a>
+    </div>
+    <div id="bracket-body"></div>
+  </div>
+</div>
+
+<!-- MAPPOOL VIEW -->
+<div id="view-mappool" style="display:none;">
+  <div class="stats-header">
+    <button class="stats-back" onclick="goStats()">← Back to Stats</button>
+    <div class="stats-title" id="mappool-title"></div>
+  </div>
+  <div class="stage-bar" id="mappool-stage-bar"></div>
+  <div class="main">
+    <div id="mappool-body"></div>
+  </div>
+</div>
+
+<!-- TEAMS VIEW -->
+<div id="view-teams" style="display:none;">
+  <div class="stats-header">
+    <button class="stats-back" onclick="goStats()">← Back to Stats</button>
+    <div class="stats-title" id="teams-title"></div>
+  </div>
+  <div class="main">
+    <div id="teams-body"></div>
+  </div>
+</div>
+
+<script>
+// ==================== DATA ====================
+const STAGES = ['RO32','RO16','QF','SF','F','GF'];
+const SLOTS = ['NM1','NM2','NM3','NM4','NM5','HD1','HD2','HD3','HR1','HR2','HR3','DT1','DT2','DT3','DT4','FM1','FM2','FM3','FM4','PR1','PR2','PR3','PR4','TB'];
+const STORAGE_KEY = 'odt_state_v2';
+
+function newTournament(name, opts={}) {
+  return {
+    id: 't' + Date.now() + Math.floor(Math.random()*1000),
+    name: name || 'New Tournament',
+    sub: opts.sub || '',
+    format: opts.format || 'Team VS',
+    status: opts.status || 'Upcoming',
+    dates: opts.dates || '',
+    banner: opts.banner || '',           // data URL of banner background
+    teamRed: opts.teamRed || '',          // display name for team 0 ('' = "Red")
+    teamBlue: opts.teamBlue || '',        // display name for team 1 ('' = "Blue")
+    challongeSlug: opts.challongeSlug || '',
+    hiddenStages: {},                     // { RO32: true } = hidden from stage bar
+    teams: opts.teams || [],              // [{ id, name, players: [{ droid, discord, avatar, rank, profile }] }]
+    stages: {}                            // { RO16: { matches, mapOrder, slotOverrides } }
+  };
+}
+
+let state = {
+  page: 'home',                 // home | stats | bracket
+  currentTournamentId: null,    // tournament open in the stats view
+  adminTournamentId: null,      // tournament being edited in admin
+  currentMatchId: null,         // match open in the Matches view (null = match list)
+  logo: '',                     // data URL of the site logo ('' = built-in mark)
+  splashBg: '',                 // data URL of the home splash background ('' = gradient)
+  // global UI state (not per-tournament)
+  currentStage: 'RO16',
+  adminStage: 'RO16',
+  view: 'mappool',
+  lbSort: { key: 'score', dir: 'desc' },
+  playerSort: { key: 'avgScore', dir: 'desc' },
+  playerSearch: '',
+  tournaments: []
+};
+
+// ---- tournament context helpers ----
+function tById(id) { return state.tournaments.find(t => t.id === id) || null; }
+function curT() { return tById(state.currentTournamentId); }
+function admT() { return tById(state.adminTournamentId); }
+
+function getStageData(t, stage) {
+  if (!t) return { matches: [], mapOrder: [], slotOverrides: {}, manualScores: [], mapMeta: {} };
+  if (!t.stages[stage]) t.stages[stage] = { matches: [], mapOrder: [], slotOverrides: {}, manualScores: [], mapMeta: {} };
+  const sd = t.stages[stage];
+  if (!sd.manualScores) sd.manualScores = [];
+  if (!sd.mapMeta) sd.mapMeta = {};   // { [sessKey]: { cover, setId, beatmapId, version, mapper, sr, ar, cs, od, hp, bpm, length } }
+  return sd;
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    return true;
+  } catch(e) {
+    alert('Could not save — browser storage is full. Try a smaller banner/logo image.');
+    return false;
+  }
+}
+
+function loadState() {
+  try {
+    const s = localStorage.getItem(STORAGE_KEY);
+    if (s) { const p = JSON.parse(s); Object.assign(state, p); }
+  } catch(e) {}
+}
+
+function ensureSeed() {
+  if (!Array.isArray(state.tournaments) || !state.tournaments.length) {
+    const t = newTournament('osu!droid 18th Tournament', {
+      status: 'Ongoing',
+      format: 'Team VS',
+      challongeSlug: 'droiddiscordtour18'
+    });
+    state.tournaments = [t];
+  }
+  // make sure selections point at existing tournaments
+  if (!tById(state.currentTournamentId)) state.currentTournamentId = state.tournaments[0].id;
+  if (!tById(state.adminTournamentId)) state.adminTournamentId = state.currentTournamentId;
+}
+
+// ==================== INIT ====================
+loadState();
+ensureSeed();
+readStateFromURL();
+renderBrand();
+buildAdminStagePills();
+buildAdminStageVisibility();
+buildEmptySlotGrid();
+applyPage();
+renderAll();
+
+// ==================== BRAND / LOGO ====================
+function defaultLogoSVG() {
+  // temporary built-in mark — replace by uploading your own logo in Admin → Site Logo
+  return `<span class="brand-mark"><svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="1" y="1" width="32" height="32" rx="9" fill="#7c6ff7"/>
+    <rect x="1" y="1" width="32" height="32" rx="9" fill="url(#g)" fill-opacity="0.35"/>
+    <circle cx="17" cy="17" r="9" stroke="#fff" stroke-width="2.4"/>
+    <circle cx="17" cy="17" r="3.4" fill="#fff"/>
+    <defs><linearGradient id="g" x1="1" y1="1" x2="33" y2="33" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff" stop-opacity="0.5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient></defs>
+  </svg></span><span class="brand-word">osu!<span>droid</span></span>`;
+}
+
+function renderBrand() {
+  const el = document.getElementById('brand');
+  if (!el) return;
+  el.innerHTML = state.logo
+    ? `<img src="${escAttr(state.logo)}" alt="logo">`
+    : defaultLogoSVG();
+}
+
+// Big centered logo for the splash intro. Uses the uploaded logo if present,
+// otherwise the built-in mark + wordmark.
+function renderSplash() {
+  const sec = document.getElementById('splash-section');
+  const bg = document.getElementById('splash-bg');
+  if (sec && bg) {
+    if (state.splashBg) { bg.style.backgroundImage = `url('${state.splashBg}')`; sec.classList.add('has-img'); }
+    else { bg.style.backgroundImage = ''; sec.classList.remove('has-img'); }
+  }
+  const el = document.getElementById('splash-inner');
+  if (!el) return;
+  if (state.logo) {
+    el.innerHTML = `<img class="splash-img" src="${escAttr(state.logo)}" alt="logo">`;
+  } else {
+    el.innerHTML = `<div class="splash-mark">
+      <svg width="150" height="150" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1" width="32" height="32" rx="9" fill="#7c6ff7"/>
+        <rect x="1" y="1" width="32" height="32" rx="9" fill="url(#sg)" fill-opacity="0.35"/>
+        <circle cx="17" cy="17" r="9" stroke="#fff" stroke-width="2.4"/>
+        <circle cx="17" cy="17" r="3.4" fill="#fff"/>
+        <defs><linearGradient id="sg" x1="1" y1="1" x2="33" y2="33" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#fff" stop-opacity="0.5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+        </linearGradient></defs>
+      </svg>
+      <div class="splash-word">osu!<span>droid</span></div>
+    </div>`;
+  }
+}
+
+function scrollToGallery() {
+  const a = document.getElementById('gallery-anchor');
+  if (a) a.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ==================== ROUTING ====================
+function goHome() {
+  state.page = 'home';
+  saveState();
+  syncURL();
+  applyPage();
+}
+function goStats() {
+  if (!curT() && state.tournaments.length) state.currentTournamentId = state.tournaments[0].id;
+  state.page = 'stats';
+  saveState();
+  syncURL();
+  applyPage();
+}
+function openTournament(id) {
+  if (!tById(id)) return;
+  state.currentTournamentId = id;
+  state.currentMatchId = null;
+  state.page = 'stats';
+  // reset to first visible stage of this tournament
+  const t = curT();
+  const visible = STAGES.filter(s => !t.hiddenStages[s]);
+  if (visible.length && t.hiddenStages[state.currentStage]) state.currentStage = visible[0];
+  saveState();
+  syncURL();
+  applyPage();
+  renderAll();
+}
+function applyPage() {
+  document.getElementById('view-home').style.display = state.page === 'home' ? 'block' : 'none';
+  document.getElementById('view-stats').style.display = state.page === 'stats' ? 'block' : 'none';
+  document.getElementById('view-bracket').style.display = state.page === 'bracket' ? 'block' : 'none';
+  document.getElementById('view-mappool').style.display = state.page === 'mappool' ? 'block' : 'none';
+  document.getElementById('view-teams').style.display = state.page === 'teams' ? 'block' : 'none';
+  document.getElementById('nl-home').classList.toggle('active', state.page === 'home');
+  document.getElementById('nl-mappool').classList.toggle('active', state.page === 'mappool');
+  document.getElementById('nl-teams').classList.toggle('active', state.page === 'teams');
+  if (state.page === 'home') renderHome();
+  if (state.page === 'stats') { buildStageTabs(); updateStatsHeader(); switchView(state.view); }
+  if (state.page === 'mappool') { buildMappoolStageTabs(); renderMappool(); }
+  if (state.page === 'teams') renderTeams();
+}
+
+function updateStatsHeader() {
+  const t = curT();
+  const el = document.getElementById('stats-title');
+  if (el && t) el.innerHTML = tournamentNameHTML(t.name);
+}
+
+// "First <span>rest</span>" split on first space, for accent coloring
+function tournamentNameHTML(name) {
+  const n = (name || 'Tournament').trim();
+  const sp = n.indexOf(' ');
+  return sp > 0 ? `${escAttr(n.slice(0,sp))} <span>${escAttr(n.slice(sp+1))}</span>` : escAttr(n);
+}
+
+// ==================== SHAREABLE URL STATE ====================
+// Reflect the open screen into the query string (?t=...&stage=QF&view=players&match=ID)
+// so links can be copied/shared. Wrapped in try/catch because history.replaceState
+// can throw when the file is opened directly via file:// in some browsers.
+const VIEWS = ['mappool','leaderboard','players','matches'];
+
+function readStateFromURL() {
+  let params;
+  try { params = new URLSearchParams(location.search); } catch(e) { return; }
+  const tid = params.get('t');
+  const stage = params.get('stage');
+  const view = params.get('view');
+  const match = params.get('match');
+  const page = params.get('page');
+
+  if (tid && tById(tid)) state.currentTournamentId = tid;
+  if (stage && STAGES.includes(stage)) state.currentStage = stage;
+  if (view && VIEWS.includes(view)) state.view = view;
+
+  // a match link implies the Matches view on the stats page
+  if (match) {
+    state.currentMatchId = match;
+    state.view = 'matches';
+    state.page = 'stats';
+  } else {
+    state.currentMatchId = null;
+  }
+
+  if (page === 'home') state.page = 'home';
+  else if (page === 'bracket') state.page = 'bracket';
+  else if (page === 'mappool') state.page = 'mappool';
+  else if (page === 'teams') state.page = 'teams';
+  else if (page === 'stats' || tid) state.page = 'stats';
+}
+
+function syncURL() {
+  try {
+    const p = new URLSearchParams();
+    if (state.page === 'bracket') {
+      if (state.currentTournamentId) p.set('t', state.currentTournamentId);
+      p.set('page', 'bracket');
+    } else if (state.page === 'mappool') {
+      if (state.currentTournamentId) p.set('t', state.currentTournamentId);
+      p.set('page', 'mappool');
+      p.set('stage', state.currentStage);
+    } else if (state.page === 'teams') {
+      if (state.currentTournamentId) p.set('t', state.currentTournamentId);
+      p.set('page', 'teams');
+    } else if (state.page === 'stats') {
+      if (state.currentTournamentId) p.set('t', state.currentTournamentId);
+      p.set('stage', state.currentStage);
+      p.set('view', state.view);
+      if (state.view === 'matches' && state.currentMatchId) p.set('match', state.currentMatchId);
+    }
+    // page === 'home' → bare URL (no params)
+    const qs = p.toString();
+    const url = location.pathname + (qs ? '?' + qs : '') + location.hash;
+    history.replaceState(null, '', url);
+  } catch(e) { /* file:// or unsupported — sharing just won't update the URL */ }
+}
+
+// Back/forward (only meaningful when the URL was changed externally) re-applies the state.
+window.addEventListener('popstate', () => {
+  readStateFromURL();
+  applyPage();
+  if (state.page !== 'home') renderAll();
+});
+
+// ==================== HOME GALLERY ====================
+function tournamentAutoMeta(t) {
+  // dates string, or auto "N matches · M players"
+  if (t.dates) return t.dates;
+  const players = new Set();
+  let matchCount = 0;
+  for (const s of STAGES) {
+    const sd = t.stages[s];
+    if (!sd) continue;
+    matchCount += (sd.matches || []).length;
+    for (const m of (sd.matches || [])) for (const sess of (m.sessions || [])) for (const sc of (sess.scores || [])) if (sc.userName) players.add(sc.userName);
+  }
+  return matchCount ? `${matchCount} matches · ${players.size} players` : 'TBD';
+}
+
+function statusClass(status) {
+  const s = (status || '').toLowerCase();
+  if (s.startsWith('ongoing') || s.startsWith('live')) return 'ongoing';
+  if (s.startsWith('finish') || s.startsWith('done') || s.startsWith('complete')) return 'finished';
+  return 'upcoming';
+}
+
+function adminVisible() {
+  const b = document.getElementById('admin-toggle-btn');
+  return b && b.style.display !== 'none';
+}
+
+function renderHome() {
+  renderSplash();
+  const g = document.getElementById('tour-gallery');
+  if (!g) return;
+
+  let html = '';
+  for (const t of state.tournaments) {
+    const sc = statusClass(t.status);
+    const bg = t.banner
+      ? `<div class="tcard-bg" style="background-image:url('${escAttr(t.banner)}')"></div>`
+      : `<div class="tcard-bg fallback"></div>`;
+    html += `<div class="tcard" onclick="openTournament('${escJsAttr(t.id)}')">
+      ${bg}
+      <div class="tcard-overlay"></div>
+      <span class="tcard-status ${sc}"><span class="dot"></span>${escAttr(t.status || 'Upcoming')}</span>
+      <div class="tcard-label">
+        <span class="tcard-name">${escAttr(t.name)}</span>
+        <span class="tcard-dates">📅 ${escAttr(tournamentAutoMeta(t))}</span>
+      </div>
+      <span class="tcard-go">View →</span>
+    </div>`;
+  }
+
+  if (!state.tournaments.length) {
+    html += `<div class="home-empty"><b style="color:var(--text);font-size:16px;">No tournaments yet</b>
+      <p style="margin-top:8px;">Open Admin (add <code>#admin</code> to the URL) to create one.</p></div>`;
+  }
+
+  if (adminVisible()) {
+    html += `<div class="tcard-add" onclick="addTournament()">＋ Add Tournament</div>`;
+  }
+
+  g.innerHTML = html;
+}
+
+// ==================== STAGE TABS ====================
+function buildStageTabs() {
+  const bar = document.getElementById('stage-bar');
+  const t = curT();
+  if (!t) { bar.innerHTML = ''; return; }
+  const visible = STAGES.filter(s => !t.hiddenStages[s]);
+  if (t.hiddenStages[state.currentStage] && visible.length) state.currentStage = visible[0];
+  bar.innerHTML = visible.map(s =>
+    `<div class="stage-tab ${s===state.currentStage?'active':''}" onclick="selectStage('${s}')">${s}</div>`
+  ).join('');
+}
+
+function buildAdminStagePills() {
+  const c = document.getElementById('admin-stage-pills');
+  c.innerHTML = STAGES.map(s =>
+    `<div class="stage-pill ${s===state.adminStage?'active':''}" onclick="selectAdminStage('${s}')">${s}</div>`
+  ).join('');
+}
+
+function buildAdminStageVisibility() {
+  const c = document.getElementById('admin-stage-visibility');
+  if (!c) return;
+  const t = admT();
+  const hidden = t ? t.hiddenStages : {};
+  c.innerHTML = STAGES.map(s => {
+    const on = !hidden[s];
+    return `<div class="stage-pill ${on?'vis-on':'vis-off'}" onclick="toggleStageVisibility('${s}')">${on?'👁':'🚫'} ${s}</div>`;
+  }).join('');
+}
+
+function toggleStageVisibility(s) {
+  const t = admT();
+  if (!t) return;
+  if (t.hiddenStages[s]) delete t.hiddenStages[s];
+  else t.hiddenStages[s] = true;
+  saveState();
+  buildAdminStageVisibility();
+  buildStageTabs();
+  renderAll();
+}
+
+function selectStage(s) {
+  state.currentStage = s;
+  state.currentMatchId = null;
+  saveState();
+  syncURL();
+  buildStageTabs();
+  renderAll();
+  if (state.view === 'matches') renderMatchesTab();
+}
+
+function selectAdminStage(s) {
+  state.adminStage = s;
+  saveState();
+  buildAdminStagePills();
+  renderAdminMatchList();
+  renderAdminMapOrder();
+}
+
+function switchView(v) {
+  state.view = v;
+  document.getElementById('vt-mappool').classList.toggle('active', v==='mappool');
+  document.getElementById('vt-leaderboard').classList.toggle('active', v==='leaderboard');
+  document.getElementById('vt-players').classList.toggle('active', v==='players');
+  document.getElementById('vt-matches').classList.toggle('active', v==='matches');
+  document.getElementById('panel-mappool').classList.toggle('show', v==='mappool');
+  document.getElementById('panel-leaderboard').classList.toggle('show', v==='leaderboard');
+  document.getElementById('panel-players').classList.toggle('show', v==='players');
+  document.getElementById('panel-matches').classList.toggle('show', v==='matches');
+  if (v==='mappool') renderMappoolStats();
+  else if (v==='leaderboard') renderLeaderboard();
+  else if (v==='players') renderPlayersTab();
+  else if (v==='matches') renderMatchesTab();
+  syncURL();
+}
+
+// ==================== TOURNAMENT CRUD (admin) ====================
+function renderAdminTournaments() {
+  const c = document.getElementById('adm-tour-list');
+  if (!c) return;
+  c.innerHTML = state.tournaments.map(t => `
+    <div class="adm-tour-item ${t.id===state.adminTournamentId?'active':''}" onclick="selectAdminTournament('${escJsAttr(t.id)}')">
+      <div style="flex:1;min-width:0;">
+        <div class="adm-tour-name">${escAttr(t.name)}</div>
+        <div class="adm-tour-badge">${escAttr(t.status||'')}</div>
+      </div>
+      <button class="adm-tour-open" onclick="event.stopPropagation();openTournament('${escJsAttr(t.id)}')">Open ↗</button>
+    </div>`).join('');
+  const chip = document.getElementById('adm-editing-chip');
+  const t = admT();
+  if (chip) chip.textContent = t ? t.name : '—';
+}
+
+function selectAdminTournament(id) {
+  if (!tById(id)) return;
+  state.adminTournamentId = id;
+  saveState();
+  renderAdminTournaments();
+  fillTournamentInfoFields();
+  buildAdminStageVisibility();
+  renderAdminMatchList();
+  renderAdminMapOrder();
+  fillChallongeField();
+}
+
+function addTournament() {
+  const t = newTournament('New Tournament', { status: 'Upcoming' });
+  state.tournaments.push(t);
+  state.adminTournamentId = t.id;
+  saveState();
+  renderAdminTournaments();
+  fillTournamentInfoFields();
+  buildAdminStageVisibility();
+  renderAdminMatchList();
+  renderAdminMapOrder();
+  fillChallongeField();
+  if (state.page === 'home') renderHome();
+}
+
+function deleteTournament() {
+  const t = admT();
+  if (!t) return;
+  if (!confirm(`Delete tournament "${t.name}"? This removes all its stages and data.`)) return;
+  state.tournaments = state.tournaments.filter(x => x.id !== t.id);
+  if (!state.tournaments.length) ensureSeed();
+  // fix selections
+  if (!tById(state.adminTournamentId)) state.adminTournamentId = state.tournaments[0].id;
+  if (!tById(state.currentTournamentId)) state.currentTournamentId = state.tournaments[0].id;
+  saveState();
+  renderAdminTournaments();
+  fillTournamentInfoFields();
+  buildAdminStageVisibility();
+  renderAdminMatchList();
+  renderAdminMapOrder();
+  fillChallongeField();
+  if (state.page === 'home') renderHome();
+  else if (state.page === 'stats') { buildStageTabs(); updateStatsHeader(); renderAll(); }
+}
+
+function fillTournamentInfoFields() {
+  const t = admT() || {};
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+  setVal('meta-name', t.name);
+  setVal('meta-sub', t.sub);
+  setVal('meta-format', t.format);
+  setVal('meta-status', t.status);
+  setVal('meta-dates', t.dates);
+  // banner preview
+  const bp = document.getElementById('banner-preview');
+  if (bp) {
+    if (t.banner) { bp.style.backgroundImage = `url('${t.banner}')`; bp.classList.add('show'); }
+    else { bp.style.backgroundImage = ''; bp.classList.remove('show'); }
+  }
+}
+
+function saveTournamentInfo() {
+  const t = admT();
+  if (!t) return;
+  t.name = document.getElementById('meta-name').value.trim() || 'Untitled Tournament';
+  t.sub = document.getElementById('meta-sub').value.trim();
+  t.format = document.getElementById('meta-format').value.trim() || 'Team VS';
+  t.status = document.getElementById('meta-status').value.trim() || 'Upcoming';
+  t.dates = document.getElementById('meta-dates').value.trim();
+  const ok = saveState();
+  const msg = document.getElementById('meta-status-msg');
+  if (msg) { msg.textContent = ok ? 'Saved.' : ''; msg.className = 'fetch-status ok'; }
+  renderAdminTournaments();
+  if (state.page === 'home') renderHome();
+  else if (state.page === 'stats') updateStatsHeader();
+}
+
+// ==================== IMAGE UPLOAD ====================
+// Read an image file, downscale it via canvas, and return a compact data URL.
+// mime 'image/png' preserves transparency (use for logos); 'image/jpeg' is smaller (banners).
+function loadImageDownscaled(file, maxW, maxH, cb, mime, quality) {
+  if (!file) return;
+  mime = mime || 'image/jpeg';
+  quality = quality == null ? 0.85 : quality;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+      const scale = Math.min(1, maxW / width, maxH / height);
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      let out;
+      try { out = canvas.toDataURL(mime, quality); }
+      catch(e) { out = reader.result; } // fallback to original (e.g. SVG)
+      cb(out);
+    };
+    img.onerror = () => cb(reader.result);
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function onLogoFile(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  // PNG keeps transparency so the logo sits cleanly on the dark topbar
+  loadImageDownscaled(file, 320, 120, (dataUrl) => {
+    state.logo = dataUrl;
+    if (saveState()) {
+      renderBrand();
+      renderSplash();
+      const p = document.getElementById('logo-preview');
+      if (p) { p.src = dataUrl; p.classList.add('show'); }
+    }
+  }, 'image/png');
+  input.value = '';
+}
+
+function removeLogo() {
+  state.logo = '';
+  saveState();
+  renderBrand();
+  renderSplash();
+  const p = document.getElementById('logo-preview');
+  if (p) { p.src = ''; p.classList.remove('show'); }
+}
+
+function onSplashBgFile(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  loadImageDownscaled(file, 1600, 900, (dataUrl) => {
+    state.splashBg = dataUrl;
+    if (saveState()) {
+      renderSplash();
+      const p = document.getElementById('splashbg-preview');
+      if (p) { p.style.backgroundImage = `url('${dataUrl}')`; p.classList.add('show'); }
+    }
+  });
+  input.value = '';
+}
+
+function removeSplashBg() {
+  state.splashBg = '';
+  saveState();
+  renderSplash();
+  const p = document.getElementById('splashbg-preview');
+  if (p) { p.style.backgroundImage = ''; p.classList.remove('show'); }
+}
+
+function onBannerFile(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const t = admT();
+  if (!t) return;
+  loadImageDownscaled(file, 1200, 600, (dataUrl) => {
+    t.banner = dataUrl;
+    if (saveState()) {
+      const bp = document.getElementById('banner-preview');
+      if (bp) { bp.style.backgroundImage = `url('${dataUrl}')`; bp.classList.add('show'); }
+      if (state.page === 'home') renderHome();
+    }
+  });
+  input.value = '';
+}
+
+function removeBanner() {
+  const t = admT();
+  if (!t) return;
+  t.banner = '';
+  saveState();
+  const bp = document.getElementById('banner-preview');
+  if (bp) { bp.style.backgroundImage = ''; bp.classList.remove('show'); }
+  if (state.page === 'home') renderHome();
+}
+
+// ==================== ADMIN: MATCHES ====================
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('admin-overlay')) toggleAdmin();
+}
+
+async function addMatch() {
+  const raw = document.getElementById('add-match-input').value.trim();
+  const st = document.getElementById('fetch-status');
+  const t = admT();
+  if (!t) { st.textContent = 'Select a tournament first.'; st.className = 'fetch-status err'; return; }
+  if (!raw) { st.textContent = 'Enter a URL or ID.'; st.className = 'fetch-status err'; return; }
+
+  const mid = raw.match(/[?&]id=(\d+)/)?.[1] || raw.match(/^(\d+)$/)?.[1];
+  if (!mid) { st.textContent = 'Could not find match ID.'; st.className = 'fetch-status err'; return; }
+
+  st.textContent = 'Loading...'; st.className = 'fetch-status';
+
+  try {
+    const resp = await fetch(`https://osudroid.kansenindex.dev/api/tournament/getrooms_history?id=${mid}`);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+
+    const sd = getStageData(t, state.adminStage);
+
+    if (sd.matches.find(m => m.id === mid)) {
+      st.textContent = 'Match already added.'; st.className = 'fetch-status err'; return;
+    }
+
+    sd.matches.push({ id: mid, name: data.name || 'Match #' + mid, sessions: data.sessions || [] });
+
+    for (const sess of data.sessions || []) {
+      const key = sessKey(sess);
+      if (!sd.mapOrder.includes(key)) sd.mapOrder.push(key);
+    }
+
+    saveState();
+    document.getElementById('add-match-input').value = '';
+    st.textContent = `Added: ${data.name || 'Match #'+mid} (${(data.sessions||[]).length} maps)`; st.className = 'fetch-status ok';
+    renderAdminMatchList();
+    renderAdminMapOrder();
+    renderAll();
+    if (state.page === 'home') renderHome();
+  } catch(e) {
+    st.textContent = 'Error: ' + e.message; st.className = 'fetch-status err';
+  }
+}
+
+function removeMatch(mid) {
+  const t = admT();
+  if (!t) return;
+  const sd = getStageData(t, state.adminStage);
+  sd.matches = sd.matches.filter(m => m.id !== mid);
+  const allKeys = new Set();
+  for (const m of sd.matches) for (const s of m.sessions) allKeys.add(sessKey(s));
+  sd.mapOrder = sd.mapOrder.filter(k => allKeys.has(k) || k.startsWith('EMPTY:'));
+  for (const k of allKeys) if (!sd.mapOrder.includes(k)) sd.mapOrder.push(k);
+  saveState();
+  renderAdminMatchList();
+  renderAdminMapOrder();
+  renderAll();
+}
+
+function clearStage() {
+  const t = admT();
+  if (!t) return;
+  if (!confirm(`Clear all data for ${state.adminStage} in "${t.name}"?`)) return;
+  t.stages[state.adminStage] = { matches: [], mapOrder: [], slotOverrides: {}, manualScores: [], mapMeta: {} };
+  saveState();
+  renderAdminMatchList();
+  renderAdminMapOrder();
+  renderAll();
+}
+
+function renderAdminMatchList() {
+  const t = admT();
+  const c = document.getElementById('match-list');
+  if (!t) { c.innerHTML = '<div style="font-size:12px;color:var(--muted);">No tournament selected.</div>'; return; }
+  const sd = getStageData(t, state.adminStage);
+  if (!sd.matches.length) { c.innerHTML = '<div style="font-size:12px;color:var(--muted);">No matches yet.</div>'; return; }
+  c.innerHTML = sd.matches.map(m => `
+    <div class="match-item" draggable="true" data-mid="${escAttr(m.id)}"
+        ondragstart="matchDragStart(event)" ondragover="matchDragOver(event)" ondrop="matchDragDrop(event)" ondragend="matchDragEnd(event)">
+      <span class="drag-handle" title="Drag to reorder">⠿</span>
+      <div class="match-info">
+        <div class="match-name">${escAttr(m.name)}</div>
+        <div class="match-id">ID: ${m.id} · ${m.sessions.length} maps</div>
+      </div>
+      <button class="match-del" onclick="renameMatch('${m.id}')" title="Rename" style="color:var(--accent);">✎</button>
+      <button class="match-del" onclick="removeMatch('${m.id}')" title="Remove">✕</button>
+    </div>`).join('');
+}
+
+// ---- match reordering (drag & drop in admin; order is reflected in the public Matches list) ----
+let matchDragSrc = null;
+function matchDragStart(e) { matchDragSrc = e.currentTarget.dataset.mid; e.currentTarget.classList.add('dragging'); }
+function matchDragEnd(e) { e.currentTarget.classList.remove('dragging'); document.querySelectorAll('#match-list .match-item').forEach(el => el.classList.remove('drag-over')); }
+function matchDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function matchDragDrop(e) {
+  e.preventDefault();
+  const target = e.currentTarget.dataset.mid;
+  if (!matchDragSrc || matchDragSrc === target) return;
+  const t = admT();
+  if (!t) return;
+  const sd = getStageData(t, state.adminStage);
+  const from = sd.matches.findIndex(m => m.id === matchDragSrc);
+  const to = sd.matches.findIndex(m => m.id === target);
+  if (from < 0 || to < 0) return;
+  const [moved] = sd.matches.splice(from, 1);
+  sd.matches.splice(to, 0, moved);
+  saveState();
+  renderAdminMatchList();
+  renderAll();
+}
+
+function renameMatch(mid) {
+  const t = admT();
+  if (!t) return;
+  const sd = getStageData(t, state.adminStage);
+  const m = sd.matches.find(x => x.id === mid);
+  if (!m) return;
+  const name = prompt('Match name:', m.name);
+  if (name === null) return;
+  m.name = name.trim() || m.name;
+  m.customName = true;
+  saveState();
+  renderAdminMatchList();
+  renderAll();
+}
+
+// ==================== MAP ORDER ====================
+let dragSrc = null;
+function sessKey(sess) { return sess.mapName; }
+
+function getSlot(sd, key, mapName) {
+  if (sd.slotOverrides[key]) return sd.slotOverrides[key];
+  // Only treat a bracketed token as a slot if it's a real slot code (NM1, HD2, …),
+  // NOT a difficulty name like [REI], [ONI], [Insane]. Unknown → null (shows "??").
+  const brackets = mapName.match(/\[([^\]]+)\]/g) || [];
+  for (const br of brackets) {
+    const inner = br.slice(1, -1).trim();
+    if (/^(NM|HD|HR|DT|NC|FM|PR|FL|TB|EZ)\d*$/i.test(inner)) return inner.toUpperCase();
+  }
+  return null;
+}
+
+function renderAdminMapOrder() {
+  const t = admT();
+  const c = document.getElementById('map-order-list');
+  if (!t) { c.innerHTML = '<div style="font-size:12px;color:var(--muted);">No tournament selected.</div>'; renderManualScoreEditor(); renderMappoolAdmin(); return; }
+  const sd = getStageData(t, state.adminStage);
+  if (!sd.mapOrder.length) { c.innerHTML = '<div style="font-size:12px;color:var(--muted);">No maps yet.</div>'; renderManualScoreEditor(); renderMappoolAdmin(); return; }
+
+  const sessMap = buildSessMap(t, state.adminStage);
+
+  c.innerHTML = sd.mapOrder.map((key, i) => {
+    const isEmpty = key.startsWith('EMPTY:');
+    const info = isEmpty ? null : sessMap[key];
+    const rawName = isEmpty ? '(Not played)' : (info ? info.mapName : key);
+    const slot = isEmpty ? sd.slotOverrides[key] : (info ? getSlot(sd, key, rawName) : null);
+    const displayName = isEmpty ? '(Not played)' : rawName.replace(/\[(?:NM|HD|HR|DT|NC|FM|PR|FL|TB|EZ)\d*\]\s*/i, '').trim();
+    const sc = slotClass(slot);
+    const ke = escAttr(key);
+    return `<div class="map-order-item" draggable="true" data-key="${ke}" data-idx="${i}"
+        ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="dragDrop(event)" ondragend="dragEnd(event)">
+      <span class="drag-handle">⠿</span>
+      <span class="slot-badge ${sc} map-order-slot" style="cursor:pointer"
+        data-key="${ke}" data-name="${escAttr(rawName)}" onclick="openSlotModalFromEl(this)">${slot||'??'}</span>
+      <span class="map-order-name" title="${escAttr(rawName)}" style="${isEmpty?'font-style:italic;':''}">${displayName}</span>
+      <button class="slot-edit-btn" data-key="${ke}" data-name="${escAttr(rawName)}" onclick="openSlotModalFromEl(this)">Slot</button>
+      <button class="slot-edit-btn" style="color:#ef5350;border-color:#ef535044;" data-key="${ke}" onclick="removeMapFromEl(this)">✕</button>
+    </div>`;
+  }).join('');
+  renderManualScoreEditor();
+  renderMappoolAdmin();
+}
+
+function openSlotModalFromEl(el) { openSlotModal(el.dataset.key, el.dataset.name); }
+function removeMapFromEl(el) { removeMap(el.dataset.key); }
+
+// ==================== MANUAL SCORES ====================
+function renderManualScoreEditor() {
+  const t = admT();
+  const mapSel = document.getElementById('ms-map');
+  const matchSel = document.getElementById('ms-match');
+  const list = document.getElementById('ms-list');
+  if (!mapSel || !matchSel || !list) return;
+  if (!t) { mapSel.innerHTML = ''; matchSel.innerHTML = ''; list.innerHTML = ''; return; }
+
+  const sd = getStageData(t, state.adminStage);
+  const maps = getOrderedMaps(t, state.adminStage).filter(({info}) => !info._empty);
+
+  mapSel.innerHTML = maps.length
+    ? maps.map(({key, info}) => {
+        const slot = getSlot(sd, key, info.mapName) || '??';
+        const dn = info.mapName.replace(/\[(?:NM|HD|HR|DT|NC|FM|PR|FL|TB|EZ)\d*\]\s*/i,'').trim();
+        return `<option value="${escAttr(key)}">${escAttr(slot)} — ${escAttr(dn)}</option>`;
+      }).join('')
+    : `<option value="">No played maps in this stage</option>`;
+
+  matchSel.innerHTML = `<option value="">Match: Manual</option>` +
+    sd.matches.map(m => { const n = cleanMatchName(m.name, m); return `<option value="${escAttr(n)}">Match: ${escAttr(n)}</option>`; }).join('');
+
+  const items = sd.manualScores || [];
+  list.innerHTML = items.length
+    ? items.map(ms => {
+        const dn = ms.key.replace(/\[(?:NM|HD|HR|DT|NC|FM|PR|FL|TB|EZ)\d*\]\s*/i,'').trim();
+        const mline = `${escAttr(dn)} · ${(ms.accuracy*100).toFixed(2)}% · ${escAttr((ms.mods||[]).join(' ')||'NM')}${ms.match?(' · '+escAttr(ms.match)):''}`;
+        return `<div class="match-item">
+          <div class="match-info">
+            <div class="match-name">${escAttr(ms.userName)} · ${Number(ms.score).toLocaleString()}</div>
+            <div class="match-id">${mline}</div>
+          </div>
+          <button class="match-del" onclick="removeManualScore('${escJsAttr(ms.id)}')" title="Remove">✕</button>
+        </div>`;
+      }).join('')
+    : '<div style="font-size:12px;color:var(--muted);">No manual scores yet.</div>';
+}
+
+function addManualScore() {
+  const t = admT();
+  const st = document.getElementById('ms-status');
+  if (!t) { st.textContent = 'Select a tournament first.'; st.className = 'fetch-status err'; return; }
+  const sd = getStageData(t, state.adminStage);
+  const key = document.getElementById('ms-map').value;
+  const userName = document.getElementById('ms-player').value.trim();
+  const scoreRaw = document.getElementById('ms-score').value.trim().replace(/[,\s]/g,'');
+  const accRaw = document.getElementById('ms-acc').value.trim();
+  const modsRaw = document.getElementById('ms-mods').value.trim();
+  const matchLbl = document.getElementById('ms-match').value;
+
+  if (!key) { st.textContent = 'No map selected — add the match for this stage first.'; st.className = 'fetch-status err'; return; }
+  if (!userName) { st.textContent = 'Enter a player name.'; st.className = 'fetch-status err'; return; }
+  const score = parseInt(scoreRaw, 10);
+  if (!Number.isFinite(score) || score < 0) { st.textContent = 'Enter a valid score.'; st.className = 'fetch-status err'; return; }
+  let acc = parseFloat(accRaw.replace('%','').replace(',','.'));
+  if (!Number.isFinite(acc)) acc = 0;
+  acc = Math.max(0, Math.min(100, acc)) / 100;
+  const mods = modsRaw ? modsRaw.toUpperCase().split(/[\s,]+/).filter(Boolean) : [];
+
+  sd.manualScores = sd.manualScores || [];
+  sd.manualScores.push({
+    id: 'ms' + Date.now() + Math.floor(Math.random()*1000),
+    key, userName, score, accuracy: acc, mods, match: matchLbl
+  });
+  saveState();
+  document.getElementById('ms-player').value = '';
+  document.getElementById('ms-score').value = '';
+  document.getElementById('ms-acc').value = '';
+  document.getElementById('ms-mods').value = '';
+  st.textContent = `Added ${userName} (${score.toLocaleString()}).`; st.className = 'fetch-status ok';
+  renderManualScoreEditor();
+  renderAll();
+  if (state.page === 'home') renderHome();
+}
+
+function removeManualScore(id) {
+  const t = admT();
+  if (!t) return;
+  const sd = getStageData(t, state.adminStage);
+  sd.manualScores = (sd.manualScores || []).filter(ms => ms.id !== id);
+  saveState();
+  renderManualScoreEditor();
+  renderAll();
+}
+
+function dragStart(e) { dragSrc = e.currentTarget.dataset.key; e.currentTarget.classList.add('dragging'); }
+function dragEnd(e) { e.currentTarget.classList.remove('dragging'); document.querySelectorAll('.map-order-item').forEach(el=>el.classList.remove('drag-over')); }
+function dragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function dragDrop(e) {
+  e.preventDefault();
+  const target = e.currentTarget.dataset.key;
+  if (!dragSrc || dragSrc === target) return;
+  const t = admT();
+  if (!t) return;
+  const sd = getStageData(t, state.adminStage);
+  const from = sd.mapOrder.indexOf(dragSrc);
+  const to = sd.mapOrder.indexOf(target);
+  if (from < 0 || to < 0) return;
+  sd.mapOrder.splice(from, 1);
+  sd.mapOrder.splice(to, 0, dragSrc);
+  saveState();
+  renderAdminMapOrder();
+  renderAll();
+}
+
+// ==================== SLOT MODAL ====================
+let slotModalKey = null;
+let slotModalSelected = null;
+
+function openSlotModal(key, mapName) {
+  slotModalKey = key;
+  const t = admT();
+  const sd = getStageData(t, state.adminStage);
+  const current = getSlot(sd, key, mapName);
+  slotModalSelected = current;
+  document.getElementById('slot-modal-mapname').textContent = mapName.replace(/\[(?:NM|HD|HR|DT|NC|FM|PR|FL|TB|EZ)\d*\]\s*/i,'').trim();
+  const grid = document.getElementById('slot-grid');
+  grid.innerHTML = SLOTS.map(s => {
+    const sc = slotClass(s);
+    return `<div class="slot-opt ${sc} ${s===current?'selected':''}" onclick="selectSlotOpt('${s}',this)">${s}</div>`;
+  }).join('');
+  document.getElementById('slot-modal').classList.add('show');
+}
+
+function selectSlotOpt(s, el) {
+  slotModalSelected = s;
+  document.querySelectorAll('.slot-opt').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function confirmSlot() {
+  if (!slotModalKey || !slotModalSelected) return;
+  const t = admT();
+  const sd = getStageData(t, state.adminStage);
+  sd.slotOverrides[slotModalKey] = slotModalSelected;
+  saveState();
+  closeSlotModal();
+  renderAdminMapOrder();
+  renderAll();
+}
+
+function closeSlotModal() { document.getElementById('slot-modal').classList.remove('show'); slotModalKey=null; }
+
+// ==================== RENDER HELPERS ====================
+function cleanMatchName(name, match) {
+  if (match && match.customName) return (match.name || '').trim();
+
+  let n = (name || '').trim();
+  n = n.replace(/\s*Ref{1,2}(eree)?:?\s*\S*/gi, '').trim();
+
+  const stageMap = [
+    [/grand\s*final/i, 'GF'],
+    [/^gf/i, 'GF'],
+    [/round\s*of\s*32|^ro32/i, 'RO32'],
+    [/round\s*of\s*16|^ro16/i, 'RO16'],
+    [/quarter\s*final|^qf/i, 'QF'],
+    [/semi\s*final|^sf/i, 'SF'],
+    [/^final(?!s)|^f(?=[\s\-_]|\d)/i, 'F'],
+  ];
+
+  for (const [re, code] of stageMap) {
+    if (re.test(n)) {
+      const numMatch = n.match(/(\d+)/);
+      const num = numMatch ? numMatch[1] : '';
+      return num ? `${code}-${num}` : code;
+    }
+  }
+
+  const shortMatch = n.match(/^(RO32|RO16|QF|SF|GF|F)[-_\s]?(\d+)/i);
+  if (shortMatch) return `${shortMatch[1].toUpperCase()}-${shortMatch[2]}`;
+
+  return n;
+}
+
+function buildSessMap(t, stage) {
+  const sd = getStageData(t, stage);
+  const map = {};
+  for (const m of sd.matches) {
+    const matchName = cleanMatchName(m.name, m);
+    for (const s of m.sessions) {
+      const key = sessKey(s);
+      const taggedScores = (s.scores || []).map(sc => ({ ...sc, _matchName: matchName }));
+      if (!map[key]) {
+        map[key] = { ...s, scores: taggedScores, matchName };
+      } else {
+        map[key].scores = [...(map[key].scores || []), ...taggedScores];
+      }
+    }
+  }
+  // inject manually-added scores (for players missing from match history, e.g. disconnects).
+  // They attach to an already-played map (session must exist).
+  for (const ms of (sd.manualScores || [])) {
+    if (!map[ms.key]) continue;
+    map[ms.key].scores = [...(map[ms.key].scores || []), {
+      userName: ms.userName,
+      score: ms.score,
+      accuracy: ms.accuracy,
+      playMod: (ms.mods || []).map(a => ({ acronym: a })),
+      team: (ms.team != null ? ms.team : 1),
+      isAlive: true,
+      _matchName: ms.match || 'Manual',
+      _manual: true
+    }];
+  }
+  return map;
+}
+
+function getOrderedMaps(t, stage) {
+  const sd = getStageData(t, stage);
+  const sessMap = buildSessMap(t, stage);
+  return sd.mapOrder.map(key => {
+    if (key.startsWith('EMPTY:')) {
+      return { key, info: { mapName: '', scores: [], matchName: '', _empty: true } };
+    }
+    return { key, info: sessMap[key] };
+  }).filter(x => x.info);
+}
+
+function buildEmptySlotGrid() {
+  const grid = document.getElementById('empty-slot-grid');
+  if (!grid) return;
+  grid.innerHTML = SLOTS.map(s => {
+    const sc = slotClass(s);
+    return `<div class="slot-opt ${sc}" data-slot="${s}" onclick="addEmptySlot(this)">${s}</div>`;
+  }).join('');
+}
+
+function addEmptySlot(el) {
+  const slot = el.dataset.slot;
+  const t = admT();
+  if (!t) return;
+  const sd = getStageData(t, state.adminStage);
+  const key = 'EMPTY:' + slot + ':' + Date.now();
+  sd.mapOrder.push(key);
+  sd.slotOverrides[key] = slot;
+  saveState();
+  renderAdminMapOrder();
+  renderAll();
+}
+
+function getPlayerScores(info) {
+  const valid = (info.scores||[]).filter(s => s.team !== null && !(s.score===0 && !s.isAlive));
+  // Dedupe per player: if a player has multiple scores on the same map (e.g. their team
+  // played two matches in a losers bracket), keep only their highest score.
+  const best = new Map();
+  for (const s of valid) {
+    const prev = best.get(s.userName);
+    if (!prev || s.score > prev.score) best.set(s.userName, s);
+  }
+  return [...best.values()];
+}
+
+// ==================== RENDER (public, current tournament) ====================
+function renderAll() {
+  renderMappoolStats();
+  renderLeaderboard();
+  renderPlayersTab();
+  renderMatchesTab();
+}
+
+function noTournamentHTML() {
+  return `<div class="empty"><b>No tournament selected</b><p>Go back to Tournaments and pick one.</p></div>`;
+}
+
+function renderPlayersTab(opts={}) {
+  const t = curT();
+  if (!t) { document.getElementById('panel-players').innerHTML = noTournamentHTML(); return; }
+  const stage = state.currentStage;
+  const sd = getStageData(t, stage);
+  const maps = getOrderedMaps(t, stage).filter(({info}) => !info._empty);
+
+  if (!maps.length) {
+    document.getElementById('panel-players').innerHTML =
+      `<div class="empty"><b>No data for ${stage}</b><p>Open Admin panel and add match URLs.</p></div>`;
+    return;
+  }
+
+  const agg = {};
+  for (const {key, info} of maps) {
+    const slot = getSlot(sd, key, info.mapName) || '??';
+    for (const p of getPlayerScores(info)) {
+      if (!agg[p.userName]) agg[p.userName] = { name: p.userName, maps: 0, totalScore: 0, totalAcc: 0, best: 0, bestSlot: null };
+      const a = agg[p.userName];
+      a.maps++;
+      a.totalScore += p.score;
+      a.totalAcc += p.accuracy * 100;
+      if (p.score > a.best) { a.best = p.score; a.bestSlot = slot; }
+    }
+  }
+
+  let rows = Object.values(agg).map(a => ({
+    name: a.name,
+    maps: a.maps,
+    avgScore: Math.round(a.totalScore / a.maps),
+    avgAcc: a.totalAcc / a.maps,
+    best: a.best,
+    bestSlot: a.bestSlot,
+    totalScore: a.totalScore
+  }));
+
+  const totalPlayers = rows.length;
+
+  const q = (state.playerSearch || '').trim().toLowerCase();
+  if (q) rows = rows.filter(r => r.name.toLowerCase().includes(q));
+
+  const sortKey = state.playerSort.key;
+  const sortDir = state.playerSort.dir;
+  const arrow = (k) => sortKey === k ? (sortDir === 'desc' ? ' ▼' : ' ▲') : '';
+
+  rows.sort((a,b) => {
+    let va = a[sortKey], vb = b[sortKey];
+    if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+    if (va < vb) return sortDir === 'desc' ? 1 : -1;
+    if (va > vb) return sortDir === 'desc' ? -1 : 1;
+    return 0;
+  });
+
+  const flip = opts.flip;
+  let firstRects = null;
+  if (flip) {
+    firstRects = {};
+    document.querySelectorAll('#panel-players tbody tr[data-name]').forEach(tr => {
+      firstRects[tr.dataset.name] = tr.getBoundingClientRect().top;
+    });
+  }
+
+  const countLine = q
+    ? `<div class="search-count">${rows.length} of ${totalPlayers} players</div>`
+    : `<div class="search-count">${totalPlayers} players</div>`;
+
+  let html = `<div class="player-search-wrap">
+      <input type="text" class="player-search" id="player-search-input" placeholder="Search player…"
+        value="${escAttr(state.playerSearch||'')}" oninput="onPlayerSearch(this.value)">
+    </div>${countLine}
+    <table class="players-table ${flip?'no-entrance':''}"><thead><tr>
+    <th style="width:32px;">#</th>
+    <th onclick="setPlayerSort('name')">Player${arrow('name')}</th>
+    <th class="r" onclick="setPlayerSort('maps')" style="width:90px;">Maps${arrow('maps')}</th>
+    <th class="r" onclick="setPlayerSort('avgScore')" style="width:120px;">Avg Score${arrow('avgScore')}</th>
+    <th class="r" onclick="setPlayerSort('avgAcc')" style="width:110px;">Avg Acc${arrow('avgAcc')}</th>
+    <th class="r" onclick="setPlayerSort('best')" style="width:150px;">Best Score${arrow('best')}</th>
+    <th class="r" onclick="setPlayerSort('totalScore')" style="width:130px;">Total Score${arrow('totalScore')}</th>
+  </tr></thead><tbody>`;
+
+  if (!rows.length) {
+    html += `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.5rem;">No players match “${escAttr(state.playerSearch)}”.</td></tr>`;
+  }
+
+  rows.forEach((r,i)=>{
+    const rc = i===0?'r1':i===1?'r2':i===2?'r3':'';
+    const delay = flip ? 0 : Math.min(i*0.035, 0.5);
+    html += `<tr data-name="${escAttr(r.name)}" style="${flip?'':'animation-delay:'+delay+'s'}">
+      <td class="rc ${rc}" style="font-weight:700;">${i+1}</td>
+      <td class="pc clickable" onclick="openProfile('${escJsAttr(r.name)}')">${r.name}</td>
+      <td class="r">${r.maps}</td>
+      <td class="r">${r.avgScore.toLocaleString()}</td>
+      <td class="r">${r.avgAcc.toFixed(2)}%</td>
+      <td class="r"><span style="display:inline-flex;align-items:center;gap:8px;justify-content:flex-end;">${r.best.toLocaleString()} <span class="slot-badge ${slotClass(r.bestSlot)}" style="font-size:10px;padding:2px 6px;">${r.bestSlot||'??'}</span></span></td>
+      <td class="r">${r.totalScore.toLocaleString()}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('panel-players').innerHTML = html;
+
+  if (flip && firstRects) {
+    const trs = document.querySelectorAll('#panel-players tbody tr[data-name]');
+    trs.forEach(tr => {
+      const prevTop = firstRects[tr.dataset.name];
+      if (prevTop === undefined) return;
+      const newTop = tr.getBoundingClientRect().top;
+      const dy = prevTop - newTop;
+      if (!dy) return;
+      tr.style.transform = `translateY(${dy}px)`;
+      tr.style.transition = 'none';
+    });
+    requestAnimationFrame(() => {
+      trs.forEach(tr => {
+        tr.style.transition = 'transform .45s cubic-bezier(.22,.61,.36,1)';
+        tr.style.transform = '';
+      });
+    });
+  }
+}
+
+let playerSearchTimer = null;
+function onPlayerSearch(val) {
+  state.playerSearch = val;
+  clearTimeout(playerSearchTimer);
+  playerSearchTimer = setTimeout(() => {
+    renderPlayersTab();
+    const inp = document.getElementById('player-search-input');
+    if (inp) { inp.focus(); const v = inp.value; inp.value=''; inp.value=v; }
+  }, 120);
+}
+
+function setPlayerSort(key) {
+  if (state.playerSort.key === key) {
+    state.playerSort.dir = state.playerSort.dir === 'desc' ? 'asc' : 'desc';
+  } else {
+    state.playerSort.key = key;
+    state.playerSort.dir = key === 'name' ? 'asc' : 'desc';
+  }
+  saveState();
+  renderPlayersTab({ flip: true });
+}
+
+function renderMappoolStats() {
+  const t = curT();
+  if (!t) { document.getElementById('panel-mappool').innerHTML = noTournamentHTML(); return; }
+  const stage = state.currentStage;
+  const sd = getStageData(t, stage);
+  const maps = getOrderedMaps(t, stage);
+
+  if (!maps.length) {
+    document.getElementById('panel-mappool').innerHTML =
+      `<div class="empty"><b>No data for ${stage}</b><p>Open Admin panel and add match URLs.</p></div>`;
+    return;
+  }
+
+  const allScores = maps.flatMap(({info}) => getPlayerScores(info));
+  const players = new Set(allScores.map(s=>s.userName));
+  const matchNames = new Set(sd.matches.map(m=>cleanMatchName(m.name, m)));
+  const playedMaps = maps.filter(({info}) => !info._empty);
+
+  let html = `<div class="summary-bar">
+    <div class="sum-item"><div class="sum-val" data-count="${matchNames.size}">0</div><div class="sum-lbl">Matches</div></div>
+    <div class="sum-item"><div class="sum-val" data-count="${playedMaps.length}">0</div><div class="sum-lbl">Maps</div></div>
+    <div class="sum-item"><div class="sum-val" data-count="${players.size}">0</div><div class="sum-lbl">Players</div></div>
+    <div class="sum-item"><div class="sum-val" data-count="${allScores.length}">0</div><div class="sum-lbl">Total Scores</div></div>
+  </div><div class="map-grid">`;
+
+  for (const {key, info} of maps) {
+    const slot = getSlot(sd, key, info.mapName);
+    const sc = slotClass(slot);
+
+    if (info._empty) {
+      const meta = (sd.mapMeta || {})[key] || {};
+      if (meta.title || meta.cover) {
+        // unplayed slot that has a beatmap attached → show the map, no scores yet
+        const dn = meta.artist ? `${meta.artist} - ${meta.title}` : (meta.title || '');
+        html += `<div class="map-card empty-slot">
+          <div class="map-card-head">
+            <span class="slot-badge ${sc}">${slot||'??'}</span>
+            <span class="map-card-title" title="${escAttr(dn)}">${escAttr(dn)}${meta.version?` <span style="color:var(--muted);font-weight:500;">[${escAttr(meta.version)}]</span>`:''}</span>
+          </div>
+          <div class="empty-note">No scores yet — this map hasn't been played.</div>
+        </div>`;
+      } else {
+        html += `<div class="map-card empty-slot">
+          <div class="map-card-head">
+            <span class="slot-badge ${sc}">${slot||'??'}</span>
+            <span class="map-card-title" style="font-style:italic;">Not played</span>
+          </div>
+          <div class="empty-note">This slot wasn't played this stage.</div>
+        </div>`;
+      }
+      continue;
+    }
+
+    const ps = getPlayerScores(info).sort((a,b)=>b.score-a.score);
+    const displayName = info.mapName.replace(/\[(?:NM|HD|HR|DT|NC|FM|PR|FL|TB|EZ)\d*\]\s*/i,'').trim();
+    const avgScore = ps.length ? Math.round(ps.reduce((s,x)=>s+x.score,0)/ps.length) : 0;
+    const avgAcc = ps.length ? (ps.reduce((s,x)=>s+(x.accuracy*100),0)/ps.length).toFixed(2) : '0.00';
+
+    html += `<div class="map-card">
+      <div class="map-card-head">
+        <span class="slot-badge ${sc}">${slot||'??'}</span>
+        <span class="map-card-title" title="${info.mapName}">${displayName}</span>
+      </div>
+      <div class="map-card-stats">
+        <div><div class="cs-val">${avgScore.toLocaleString()}</div><div class="cs-lbl">Avg Score</div></div>
+        <div><div class="cs-val">${avgAcc}%</div><div class="cs-lbl">Avg Acc</div></div>
+        <div><div class="cs-val">${ps.length}</div><div class="cs-lbl">Scores</div></div>
+      </div>
+      <div class="map-card-players">`;
+
+    ps.slice(0,5).forEach((p,i)=>{
+      const rc = i===0?'r1':i===1?'r2':i===2?'r3':'';
+      const mods = (p.playMod||[]).map(m=>m.acronym).filter(m=>m!=='V2');
+      html += `<div class="tp-row">
+        <span class="tp-rank ${rc}">#${i+1}</span>
+        <span class="tp-name">${p.userName}</span>
+        <span class="tp-score">${p.score.toLocaleString()}</span>
+        <span class="tp-acc ${accCls(p.accuracy*100)}">${(p.accuracy*100).toFixed(2)}%</span>
+        <span class="tp-mods">${modPills(mods)}</span>
+      </div>`;
+    });
+
+    html += `</div></div>`;
+  }
+
+  html += '</div>';
+  document.getElementById('panel-mappool').innerHTML = html;
+  animateCounts(document.getElementById('panel-mappool'));
+}
+
+function animateCounts(container) {
+  const els = container.querySelectorAll('[data-count]');
+  els.forEach(el => {
+    const target = parseInt(el.dataset.count, 10) || 0;
+    if (target === 0) { el.textContent = '0'; return; }
+    const duration = 700;
+    let startTs = null;
+    function step(ts) {
+      if (startTs === null) startTs = ts;
+      const p = Math.min((ts - startTs) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(target * eased).toLocaleString();
+      if (p < 1) requestAnimationFrame(step);
+      else el.textContent = target.toLocaleString();
+    }
+    requestAnimationFrame(step);
+  });
+}
+
+function renderLeaderboard() {
+  const t = curT();
+  if (!t) { document.getElementById('panel-leaderboard').innerHTML = noTournamentHTML(); return; }
+  const stage = state.currentStage;
+  const sd = getStageData(t, stage);
+  const maps = getOrderedMaps(t, stage);
+
+  if (!maps.length) {
+    document.getElementById('panel-leaderboard').innerHTML =
+      `<div class="empty"><b>No data for ${stage}</b><p>Open Admin panel and add match URLs.</p></div>`;
+    return;
+  }
+
+  const sortKey = state.lbSort.key;
+  const sortDir = state.lbSort.dir;
+  const arrow = (k) => sortKey === k ? (sortDir === 'desc' ? ' ▼' : ' ▲') : '';
+
+  let html = '';
+  let any = false;
+
+  for (const {key, info} of maps) {
+    if (info._empty) continue;
+    any = true;
+    const slot = getSlot(sd, key, info.mapName);
+    const sc = slotClass(slot);
+    const displayName = info.mapName.replace(/\[(?:NM|HD|HR|DT|NC|FM|PR|FL|TB|EZ)\d*\]\s*/i,'').trim();
+    let ps = getPlayerScores(info);
+
+    ps = ps.slice().sort((a,b) => {
+      let va, vb;
+      if (sortKey === 'acc') { va = a.accuracy; vb = b.accuracy; }
+      else if (sortKey === 'player') { va = a.userName.toLowerCase(); vb = b.userName.toLowerCase(); }
+      else { va = a.score; vb = b.score; }
+      if (va < vb) return sortDir === 'desc' ? 1 : -1;
+      if (va > vb) return sortDir === 'desc' ? -1 : 1;
+      return 0;
+    });
+
+    html += `<div class="lb-section">
+      <div class="lb-head">
+        <span class="slot-badge ${sc}">${slot||'??'}</span>
+        <span class="lb-mapname">${displayName}</span>
+      </div>
+      <table class="lb-table"><thead><tr>
+        <th style="width:32px;">#</th>
+        <th onclick="setLbSort('player')">Player${arrow('player')}</th>
+        <th class="r" onclick="setLbSort('score')" style="width:110px;">Score${arrow('score')}</th>
+        <th class="r" onclick="setLbSort('acc')" style="width:90px;">Accuracy${arrow('acc')}</th>
+        <th class="r" style="width:130px;">Mods</th>
+        <th class="r" style="width:80px;">Match</th>
+      </tr></thead><tbody>`;
+
+    ps.forEach((p,i)=>{
+      const rc = i===0?'r1':i===1?'r2':i===2?'r3':'';
+      const mods = (p.playMod||[]).map(m=>m.acronym).filter(m=>m!=='V2');
+      const acc = (p.accuracy*100).toFixed(2);
+      html += `<tr>
+        <td class="rc ${rc}">${i+1}</td>
+        <td class="pc clickable" onclick="openProfile('${escJsAttr(p.userName)}')">${p.userName}</td>
+        <td class="sc">${p.score.toLocaleString()}</td>
+        <td class="ac">${acc}%</td>
+        <td class="mod-pills-cell">${modPills(mods)}</td>
+        <td class="mc-cell" style="color:var(--muted);font-size:11px;">${p._matchName||info.matchName||''}</td>
+      </tr>`;
+    });
+
+    html += `</tbody></table></div>`;
+  }
+
+  if (!any) html = `<div class="empty"><b>No played maps yet</b><p>All slots in this stage are marked as not played.</p></div>`;
+
+  document.getElementById('panel-leaderboard').innerHTML = html;
+}
+
+// ==================== MATCHES VIEW ====================
+function teamLabel(i) { return i === 0 ? 'Red' : i === 1 ? 'Blue' : 'Team ' + (i + 1); }
+function teamColorClass(i) { return i === 0 ? 'team-red' : i === 1 ? 'team-blue' : ''; }
+// Per-tournament custom team name, falling back to Red/Blue.
+function teamName(t, i) {
+  if (i === 0) return (t && t.teamRed && t.teamRed.trim()) || 'Red';
+  if (i === 1) return (t && t.teamBlue && t.teamBlue.trim()) || 'Blue';
+  return 'Team ' + (i + 1);
+}
+// True once the admin password has been entered this session (stays true after the
+// overlay is closed, so admin-only controls like the in-match add-score form remain
+// visible while browsing the public views). Reset on page reload.
+let adminUnlocked = false;
+function isAdminUnlocked() { return adminUnlocked; }
+
+// Break a single match into per-map results. If exactly two teams are present
+// it's treated as Team VS (per-map team sums + maps-won tally); otherwise each
+// map's winner is simply its top scorer.
+function analyzeMatch(t, stage, m) {
+  const sd = getStageData(t, stage);
+  const matchName = cleanMatchName(m.name, m);
+  // Manual scores attributed to this match (auto-pickup from the Manual Scores panel
+  // and from the in-match add form), keyed by map session key.
+  const manualForMatch = (sd.manualScores || []).filter(ms => ms.match === matchName);
+
+  // For each played map, merge the match's own scores with any manual scores
+  // attributed to this match on the same map.
+  const sessions = (m.sessions || []).map(s => {
+    const key = sessKey(s);
+    const manual = manualForMatch.filter(ms => ms.key === key).map(ms => ({
+      userName: ms.userName, score: ms.score, accuracy: ms.accuracy,
+      playMod: (ms.mods || []).map(a => ({ acronym: a })),
+      team: (ms.team != null ? ms.team : 1), isAlive: true, _manual: true
+    }));
+    return { s, key, scores: [...(s.scores || []), ...manual] };
+  });
+
+  const teamSet = new Set();
+  for (const ss of sessions) for (const p of getPlayerScores({ scores: ss.scores })) {
+    if (p.team !== null && p.team !== undefined) teamSet.add(String(p.team));
+  }
+  const teamKeys = [...teamSet].sort();
+  const isTeamVs = teamKeys.length === 2;
+
+  const maps = sessions.map(({ s, key, scores }) => {
+    const slot = getSlot(sd, key, s.mapName) || '??';
+    const name = s.mapName.replace(/\[(?:NM|HD|HR|DT|NC|FM|PR|FL|TB|EZ)\d*\]\s*/i, '').trim();
+    const ps = getPlayerScores({ scores }).slice().sort((a, b) => b.score - a.score);
+    const sums = {};
+    teamKeys.forEach(k => sums[k] = 0);
+    ps.forEach(p => { const k = String(p.team); if (k in sums) sums[k] += p.score; });
+    let winTeam = null;
+    if (isTeamVs) {
+      const a = sums[teamKeys[0]], b = sums[teamKeys[1]];
+      if (a > b) winTeam = teamKeys[0]; else if (b > a) winTeam = teamKeys[1];
+    }
+    // Players grouped by team for the detailed per-map scoreboard.
+    const byTeam = {};
+    teamKeys.forEach(k => byTeam[k] = []);
+    ps.forEach(p => { const k = String(p.team); (byTeam[k] || (byTeam[k] = [])).push(p); });
+    return { slot, name, mapName: s.mapName, ps, sums, winTeam, top: ps[0] || null, byTeam };
+  });
+
+  const tally = {};
+  if (isTeamVs) {
+    teamKeys.forEach(k => tally[k] = 0);
+    maps.forEach(mp => { if (mp.winTeam) tally[mp.winTeam]++; });
+  }
+  return { maps, isTeamVs, teamKeys, tally };
+}
+
+function renderMatchesTab() {
+  const t = curT();
+  const panel = document.getElementById('panel-matches');
+  if (!panel) return;
+  if (!t) { panel.innerHTML = noTournamentHTML(); return; }
+  if (state.currentMatchId) { renderMatchDetail(); return; }
+
+  const stage = state.currentStage;
+  const sd = getStageData(t, stage);
+  const matches = sd.matches || [];
+  if (!matches.length) {
+    panel.innerHTML = `<div class="empty"><b>No matches for ${stage}</b><p>Open the Admin panel and add match URLs.</p></div>`;
+    return;
+  }
+
+  let html = `<div class="match-cards">`;
+  for (const m of matches) {
+    const a = analyzeMatch(t, stage, m);
+    const name = escAttr(cleanMatchName(m.name, m));
+    let result;
+    if (a.isTeamVs) {
+      const k0 = a.teamKeys[0], k1 = a.teamKeys[1];
+      const w0 = a.tally[k0] > a.tally[k1], w1 = a.tally[k1] > a.tally[k0];
+      result = `<span class="${teamColorClass(0)}" style="${w0 ? 'text-shadow:0 0 12px currentColor' : ''}">${a.tally[k0]}</span>
+        <span class="mm-dash">–</span>
+        <span class="${teamColorClass(1)}" style="${w1 ? 'text-shadow:0 0 12px currentColor' : ''}">${a.tally[k1]}</span>`;
+    } else {
+      result = `<span style="color:var(--muted);font-size:13px;">${a.maps.length} map${a.maps.length !== 1 ? 's' : ''}</span>`;
+    }
+    html += `<div class="mm-card" onclick="openMatch('${escJsAttr(m.id)}')">
+      <div class="mm-card-main">
+        <div class="mm-card-name">${name}</div>
+        <div class="mm-card-meta">${a.maps.length} map${a.maps.length !== 1 ? 's' : ''}${a.isTeamVs ? ' · Team VS' : ''}</div>
+      </div>
+      <div class="mm-card-result">${result}</div>
+      <span class="mm-card-go">›</span>
+    </div>`;
+  }
+  html += `</div>`;
+  panel.innerHTML = html;
+}
+
+function openMatch(id) {
+  state.currentMatchId = id;
+  state.view = 'matches';
+  saveState();
+  syncURL();
+  renderMatchDetail();
+}
+
+function closeMatch() {
+  state.currentMatchId = null;
+  saveState();
+  syncURL();
+  renderMatchesTab();
+}
+
+function renderMatchDetail() {
+  const t = curT();
+  const panel = document.getElementById('panel-matches');
+  if (!panel) return;
+  if (!t) { panel.innerHTML = noTournamentHTML(); return; }
+  const stage = state.currentStage;
+  const sd = getStageData(t, stage);
+  const m = (sd.matches || []).find(x => x.id === state.currentMatchId);
+  if (!m) { state.currentMatchId = null; renderMatchesTab(); return; }
+
+  const a = analyzeMatch(t, stage, m);
+  const name = escAttr(cleanMatchName(m.name, m));
+
+  // ---- middle scoreboard: "Team Red name  N – M  Team Blue name" ----
+  let scoreboard, winnerLine = '';
+  if (a.isTeamVs) {
+    const k0 = a.teamKeys[0], k1 = a.teamKeys[1];
+    const t0 = a.tally[k0], t1 = a.tally[k1];
+    const w0 = t0 > t1, w1 = t1 > t0;
+    scoreboard = `<div class="mm-scoreboard">
+      <div class="mm-team ${teamColorClass(0)}${w0 ? ' win' : ''}"><span class="mm-team-name">${escAttr(teamName(t, 0))}</span><span class="mm-team-tally">${t0}</span></div>
+      <div class="mm-vs">–</div>
+      <div class="mm-team ${teamColorClass(1)}${w1 ? ' win' : ''}"><span class="mm-team-tally">${t1}</span><span class="mm-team-name">${escAttr(teamName(t, 1))}</span></div>
+    </div>`;
+    const winnerName = w0 ? teamName(t, 0) : w1 ? teamName(t, 1) : '';
+    winnerLine = `<div class="mm-winner-line">${winnerName ? escAttr(winnerName) + ' wins' : 'Draw'}</div>`;
+  } else {
+    scoreboard = `<div class="mm-scoreboard"><div class="mm-team">${a.maps.length} map${a.maps.length !== 1 ? 's' : ''} played</div></div>`;
+  }
+
+  // ---- per-map detailed scoreboards (osu! result-screen style) ----
+  const scoreRow = (p, colorCls) => {
+    const mods = (p.playMod || []).map(x => x.acronym).filter(x => x !== 'V2');
+    return `<div class="mm-pl ${colorCls}">
+      <span class="mm-pl-name">${escAttr(p.userName)}${p._manual ? ' <span class="mm-manual">✎</span>' : ''}</span>
+      <span class="mm-pl-acc">${(p.accuracy * 100).toFixed(2)}%</span>
+      <span class="mm-pl-score">${p.score.toLocaleString()}</span>
+      <span class="mm-pl-mods">${modPills(mods)}</span>
+    </div>`;
+  };
+
+  let mapsHtml = `<div class="mm-maps">`;
+  for (const mp of a.maps) {
+    let body, footer = '';
+    if (a.isTeamVs) {
+      const k0 = a.teamKeys[0], k1 = a.teamKeys[1];
+      const s0 = mp.sums[k0] || 0, s1 = mp.sums[k1] || 0;
+      const col0 = (mp.byTeam[k0] || []).map(p => scoreRow(p, 'team-red')).join('') || `<div class="mm-pl-empty">—</div>`;
+      const col1 = (mp.byTeam[k1] || []).map(p => scoreRow(p, 'team-blue')).join('') || `<div class="mm-pl-empty">—</div>`;
+      body = `<div class="mm-cols">
+        <div class="mm-col ${mp.winTeam === k0 ? 'win' : ''}">${col0}</div>
+        <div class="mm-col ${mp.winTeam === k1 ? 'win' : ''}">${col1}</div>
+      </div>`;
+      const diff = Math.abs(s0 - s1);
+      const margin = mp.winTeam === k0 ? `${escAttr(teamName(t, 0))} wins by ${diff.toLocaleString()}`
+        : mp.winTeam === k1 ? `${escAttr(teamName(t, 1))} wins by ${diff.toLocaleString()}`
+        : 'Draw';
+      footer = `<div class="mm-map-foot">
+        <div class="mm-foot-side team-red"><span class="mm-foot-lbl">${escAttr(teamName(t, 0))}</span><span class="mm-foot-val">${s0.toLocaleString()}</span></div>
+        <div class="mm-foot-margin">${margin}</div>
+        <div class="mm-foot-side team-blue"><span class="mm-foot-lbl">${escAttr(teamName(t, 1))}</span><span class="mm-foot-val">${s1.toLocaleString()}</span></div>
+      </div>`;
+    } else {
+      body = `<div class="mm-col">${mp.ps.length ? mp.ps.map((p, i) => scoreRow(p, i === 0 ? 'mm-top' : '')).join('') : `<div class="mm-pl-empty">—</div>`}</div>`;
+    }
+    mapsHtml += `<div class="mm-mapcard">
+      <div class="mm-mapcard-head">
+        <span class="slot-badge ${slotClass(mp.slot)}">${mp.slot}</span>
+        <div class="mm-map-name" title="${escAttr(mp.name)}">${escAttr(mp.name)}</div>
+      </div>
+      ${body}
+      ${footer}
+    </div>`;
+  }
+  mapsHtml += `</div>`;
+
+  // ---- in-match add-score form (admin only) ----
+  let addForm = '';
+  if (isAdminUnlocked()) {
+    const mapOpts = a.maps.map(mp => `<option value="${escAttr(sessKeyFromName(mp.mapName))}">${escAttr(mp.slot)} — ${escAttr(mp.name)}</option>`).join('')
+      || `<option value="">No maps in this match</option>`;
+    addForm = `<div class="mm-addbox">
+      <div class="mm-addbox-title">＋ Add a missing score to this match</div>
+      <div class="mm-addgrid">
+        <select id="mm-add-map">${mapOpts}</select>
+        <input type="text" id="mm-add-player" placeholder="Player name" />
+        <input type="text" id="mm-add-score" placeholder="Score" />
+        <input type="text" id="mm-add-acc" placeholder="Acc %" />
+        <input type="text" id="mm-add-mods" placeholder="Mods (HD HR)" />
+        <select id="mm-add-team"><option value="0">Red</option><option value="1" selected>Blue</option></select>
+        <button class="btn" style="width:auto;" onclick="addMatchScore()">Add</button>
+      </div>
+      <div class="fetch-status" id="mm-add-status"></div>
+    </div>`;
+  }
+
+  panel.innerHTML = `<div class="mm-detail">
+    <button class="mm-back" onclick="closeMatch()">← All matches</button>
+    <div class="stats-title" style="margin-bottom:1rem;">${name}</div>
+    ${scoreboard}
+    ${winnerLine}
+    ${mapsHtml}
+    ${addForm}
+  </div>`;
+}
+
+// session key derived from a map name (mirror of sessKey, which keys on mapName)
+function sessKeyFromName(mapName) { return mapName; }
+
+// Add a manual score from inside the match-detail view (attributed to this match).
+function addMatchScore() {
+  const t = curT();
+  const st = document.getElementById('mm-add-status');
+  if (!t) return;
+  const stage = state.currentStage;
+  const sd = getStageData(t, stage);
+  const m = (sd.matches || []).find(x => x.id === state.currentMatchId);
+  if (!m) return;
+  const key = document.getElementById('mm-add-map').value;
+  const userName = document.getElementById('mm-add-player').value.trim();
+  const scoreRaw = document.getElementById('mm-add-score').value.trim().replace(/[,\s]/g, '');
+  const accRaw = document.getElementById('mm-add-acc').value.trim();
+  const modsRaw = document.getElementById('mm-add-mods').value.trim();
+  const team = parseInt(document.getElementById('mm-add-team').value, 10) || 0;
+
+  if (!key) { st.textContent = 'No map selected.'; st.className = 'fetch-status err'; return; }
+  if (!userName) { st.textContent = 'Enter a player name.'; st.className = 'fetch-status err'; return; }
+  const score = parseInt(scoreRaw, 10);
+  if (!Number.isFinite(score) || score < 0) { st.textContent = 'Enter a valid score.'; st.className = 'fetch-status err'; return; }
+  let acc = parseFloat(accRaw.replace('%', '').replace(',', '.'));
+  if (!Number.isFinite(acc)) acc = 0;
+  acc = Math.max(0, Math.min(100, acc)) / 100;
+  const mods = modsRaw ? modsRaw.toUpperCase().split(/[\s,]+/).filter(Boolean) : [];
+
+  sd.manualScores = sd.manualScores || [];
+  sd.manualScores.push({
+    id: 'ms' + Date.now() + Math.floor(Math.random() * 1000),
+    key, userName, score, accuracy: acc, mods, team,
+    match: cleanMatchName(m.name, m)
+  });
+  if (!saveState()) { st.textContent = 'Storage full — could not save.'; st.className = 'fetch-status err'; return; }
+  renderMatchDetail();
+  renderAll();
+  renderManualScoreEditor();
+}
+
+// ==================== BRACKET ====================
+function openBracket() {
+  if (!curT() && state.tournaments.length) state.currentTournamentId = state.tournaments[0].id;
+  state.page = 'bracket';
+  saveState();
+  syncURL();
+  applyPage();
+  renderBracket();
+}
+function closeBracket() { goStats(); }
+
+// ==================== MAPPOOL PAGE ====================
+function openMappool() {
+  if (!curT() && state.tournaments.length) state.currentTournamentId = state.tournaments[0].id;
+  state.page = 'mappool';
+  state.currentMatchId = null;
+  saveState();
+  syncURL();
+  applyPage();
+}
+
+function buildMappoolStageTabs() {
+  const bar = document.getElementById('mappool-stage-bar');
+  const t = curT();
+  if (!bar) return;
+  if (!t) { bar.innerHTML = ''; return; }
+  const visible = STAGES.filter(s => !t.hiddenStages[s]);
+  if (t.hiddenStages[state.currentStage] && visible.length) state.currentStage = visible[0];
+  bar.innerHTML = visible.map(s =>
+    `<div class="stage-tab ${s===state.currentStage?'active':''}" onclick="selectMappoolStage('${s}')">${s}</div>`
+  ).join('');
+}
+
+function selectMappoolStage(s) {
+  state.currentStage = s;
+  saveState();
+  syncURL();
+  buildMappoolStageTabs();
+  renderMappool();
+}
+
+// Parse "artist, title (mapper) [difficulty]" into parts.
+// osu!droid uses "artist, title"; difficulty is the last [bracket] that isn't a slot code.
+function parseMapName(mapName) {
+  let s = (mapName || '').trim();
+  let version = '';
+  // pull the last [..] that is a real difficulty name (not a slot like NM1/HD2)
+  const brs = [...s.matchAll(/\[([^\]]+)\]/g)];
+  for (let i = brs.length - 1; i >= 0; i--) {
+    const inner = brs[i][1].trim();
+    if (!/^(NM|HD|HR|DT|NC|FM|PR|FL|TB|EZ)\d*$/i.test(inner)) { version = inner; break; }
+  }
+  // strip slot codes and the chosen difficulty bracket from the title text
+  let core = s.replace(/\[(?:NM|HD|HR|DT|NC|FM|PR|FL|TB|EZ)\d*\]/ig, '');
+  if (version) core = core.replace('[' + version + ']', '');
+  core = core.trim();
+  let mapper = '';
+  const mp = core.match(/\(([^()]+)\)\s*$/);
+  if (mp) { mapper = mp[1].trim(); core = core.slice(0, mp.index).trim(); }
+  let artist = '', title = core;
+  const comma = core.indexOf(', ');
+  if (comma > 0) { artist = core.slice(0, comma).trim(); title = core.slice(comma + 2).trim(); }
+  return { artist, title, version, mapper };
+}
+
+function formatLength(sec) {
+  sec = parseInt(sec, 10);
+  if (!Number.isFinite(sec) || sec <= 0) return '';
+  const m = Math.floor(sec / 60), s = sec % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function renderMappool() {
+  const t = curT();
+  const titleEl = document.getElementById('mappool-title');
+  const body = document.getElementById('mappool-body');
+  if (!body) return;
+  if (titleEl && t) titleEl.innerHTML = tournamentNameHTML(t.name) + ' <span style="color:var(--muted);font-weight:600;">— Mappool</span>';
+  if (!t) { body.innerHTML = noTournamentHTML(); return; }
+
+  const stage = state.currentStage;
+  const sd = getStageData(t, stage);
+  const maps = getOrderedMaps(t, stage);
+  if (!maps.length) {
+    body.innerHTML = `<div class="empty"><b>No mappool for ${stage}</b><p>Add matches for this stage in the Admin panel.</p></div>`;
+    return;
+  }
+
+  // played maps only (skip "Not played" empty slots), grouped by mod into bands
+  const MOD_ORDER = ['NM','HD','HR','DT','NC','FM','PR','FL','EZ','TB','XX'];
+  const modOf = (slot) => {
+    const u = (slot || '').toUpperCase().replace(/[0-9]/g, '');
+    return MOD_ORDER.includes(u) ? u : 'XX';
+  };
+  const groups = {};
+  for (const { key, info } of maps) {
+    const slot = getSlot(sd, key, info.mapName || '');
+    (groups[modOf(slot)] = groups[modOf(slot)] || []).push({ key, info, slot });
+  }
+  if (!Object.keys(groups).length) {
+    body.innerHTML = `<div class="empty"><b>No mappool for ${stage}</b><p>Maps appear here once their matches are added.</p></div>`;
+    return;
+  }
+
+  const cardHTML = ({ key, info, slot }) => {
+    const sc = slotClass(slot);
+    const meta = (sd.mapMeta || {})[key] || {};
+    const hasMap = meta.cover || meta.title;
+    // unplayed slot with no attached beatmap → "Not played" placeholder
+    if (info._empty && !hasMap) {
+      return `<div class="mp-card mp-empty">
+        <div class="mp-card-overlay">
+          <div class="mp-card-top"><span class="slot-badge ${sc}">${slot || '??'}</span></div>
+          <div class="mp-card-mid"><div class="mp-empty-label">Not played</div></div>
+        </div>
+      </div>`;
+    }
+    const p = parseMapName(info.mapName);
+    const cover = meta.cover ? `style="background-image:url('${escAttr(meta.cover)}')"` : '';
+
+    const chips = [];
+    if (meta.sr != null) chips.push(`<span class="mp-chip mp-sr">★ ${Number(meta.sr).toFixed(2)}</span>`);
+    if (meta.bpm != null) chips.push(`<span class="mp-chip">${Math.round(meta.bpm)} BPM</span>`);
+    if (meta.length) chips.push(`<span class="mp-chip">${formatLength(meta.length)}</span>`);
+    const diffBits = [];
+    if (meta.cs != null) diffBits.push(`CS ${meta.cs}`);
+    if (meta.ar != null) diffBits.push(`AR ${meta.ar}`);
+    if (meta.od != null) diffBits.push(`OD ${meta.od}`);
+    if (meta.hp != null) diffBits.push(`HP ${meta.hp}`);
+
+    // prefer parsed mapName (played maps); fall back to fetched meta (unplayed slots have no mapName)
+    const rawTitle = p.title || meta.title || info.mapName || '(map)';
+    const artist = p.artist || meta.artist || '';
+    // artist sits left of the track name, e.g. "nui - Mayday" (consistent with played maps)
+    const titleLine = artist ? `${artist} - ${rawTitle}` : rawTitle;
+    const version = meta.version || p.version || '';
+    const mapper = p.mapper || meta.mapper || '';
+    const subBits = [];
+    if (version) subBits.push('[' + escAttr(version) + ']');
+    if (mapper) subBits.push('mapped by ' + escAttr(mapper));
+
+    return `<div class="mp-card">
+      <div class="mp-card-bg" ${cover}></div>
+      <div class="mp-card-shade"></div>
+      <div class="mp-card-overlay">
+        <div class="mp-card-top">
+          <span class="slot-badge ${sc}">${slot || '??'}</span>
+          ${chips.join('')}
+        </div>
+        <div class="mp-card-mid">
+          <div class="mp-title" title="${escAttr(info.mapName || titleLine)}">${escAttr(titleLine)}</div>
+          <div class="mp-sub">${subBits.join(' · ')}</div>
+        </div>
+        ${diffBits.length ? `<div class="mp-card-foot"><div class="mp-diffline">${diffBits.join('  ·  ')}</div></div>` : ''}
+      </div>
+    </div>`;
+  };
+
+  let html = '<div class="mp-pool">';
+  for (const mod of MOD_ORDER) {
+    const g = groups[mod];
+    if (!g || !g.length) continue;
+    g.sort((a, b) => (a.slot || '').localeCompare(b.slot || '', undefined, { numeric: true }));
+    html += `<div class="mp-row">${g.map(cardHTML).join('')}</div>`;
+  }
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+// ---- admin: per-map osu! link → fetch cover + stats ----
+function renderMappoolAdmin() {
+  const c = document.getElementById('mpc-list');
+  if (!c) return;
+  const t = admT();
+  if (!t) { c.innerHTML = '<div style="font-size:12px;color:var(--muted);">No tournament selected.</div>'; return; }
+  const sd = getStageData(t, state.adminStage);
+  const maps = getOrderedMaps(t, state.adminStage);
+  if (!maps.length) { c.innerHTML = '<div style="font-size:12px;color:var(--muted);">No maps or slots in this stage. Add a match or an unplayed slot first.</div>'; return; }
+
+  c.innerHTML = maps.map(({ key, info }) => {
+    const slot = getSlot(sd, key, info.mapName || '') || '??';
+    const sc = slotClass(slot);
+    const p = parseMapName(info.mapName);
+    const meta = (sd.mapMeta || {})[key] || {};
+    const ke = escAttr(key);
+    const have = meta.cover ? `<span class="mpc-ok">✓ ${meta.sr != null ? '★' + Number(meta.sr).toFixed(2) : 'cover'}</span>` : '';
+    const linkVal = escAttr(meta.sourceUrl || '');
+    const label = p.title || meta.title || (info._empty ? '(unplayed slot)' : info.mapName);
+    return `<div class="mpc-item">
+      <div class="mpc-head">
+        <span class="slot-badge ${sc}">${slot}</span>
+        <span class="mpc-name" title="${escAttr(info.mapName || label)}">${escAttr(label)}</span>
+        ${have}
+      </div>
+      <div class="mpc-row">
+        <input type="text" class="mpc-input" data-key="${ke}" value="${linkVal}" placeholder="osu! beatmap link or ID" />
+        <button class="slot-edit-btn" onclick="fetchMapMeta(this)" data-key="${ke}">Fetch</button>
+        ${meta.cover ? `<button class="slot-edit-btn" style="color:#ef5350;border-color:#ef535044;" onclick="clearMapMeta('${escJsAttr(key)}')">Clear</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Extract { setId, beatmapId } from an osu! link or bare ID.
+function parseBeatmapLink(raw) {
+  raw = (raw || '').trim();
+  if (!raw) return null;
+  let setId = null, beatmapId = null;
+  let m = raw.match(/beatmapsets\/(\d+)/i);
+  if (m) setId = m[1];
+  m = raw.match(/#(?:osu|taiko|fruits|mania)\/(\d+)/i);
+  if (m) beatmapId = m[1];
+  m = raw.match(/\/b(?:eatmaps)?\/(\d+)/i);
+  if (m && !beatmapId) beatmapId = m[1];
+  // bare number → treat as beatmap (diff) id; lets us resolve the set from the API
+  if (!setId && !beatmapId && /^\d+$/.test(raw)) beatmapId = raw;
+  if (!setId && !beatmapId) return null;
+  return { setId, beatmapId };
+}
+
+async function fetchMapMeta(btn) {
+  const key = btn.dataset.key;
+  const input = document.querySelector(`.mpc-input[data-key="${CSS.escape(key)}"]`);
+  const st = document.getElementById('mpc-status');
+  const t = admT();
+  if (!t || !input) return;
+  const parsed = parseBeatmapLink(input.value);
+  if (!parsed) { st.textContent = 'Could not read a beatmap link/ID.'; st.className = 'fetch-status err'; return; }
+
+  st.textContent = 'Fetching…'; st.className = 'fetch-status';
+  try {
+    let setId = parsed.setId;
+    // If we only have a beatmap (diff) id, resolve its set first.
+    if (!setId && parsed.beatmapId) {
+      const r = await fetch(`https://osu.direct/api/v2/b/${parsed.beatmapId}`);
+      if (r.ok) { const b = await r.json(); setId = b.beatmapset_id || (b.beatmapset && b.beatmapset.id); }
+    }
+    if (!setId) throw new Error('no beatmapset id');
+
+    const resp = await fetch(`https://osu.direct/api/v2/s/${setId}`);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const set = await resp.json();
+    const diffs = set.beatmaps || [];
+
+    // choose the matching difficulty: by beatmap id, else by version name from mapName, else first std diff.
+    const sd = getStageData(t, state.adminStage);
+    const info = (getOrderedMaps(t, state.adminStage).find(x => x.key === key) || {}).info || { mapName: key };
+    const wantVer = parseMapName(info.mapName).version.toLowerCase();
+    let b = parsed.beatmapId ? diffs.find(d => String(d.id) === String(parsed.beatmapId)) : null;
+    if (!b && wantVer) b = diffs.find(d => (d.version || '').toLowerCase() === wantVer);
+    if (!b) b = diffs.find(d => d.mode === 'osu') || diffs[0];
+    if (!b) throw new Error('no difficulties in set');
+
+    const cover = (set.covers && (set.covers['cover@2x'] || set.covers.cover))
+      || `https://assets.ppy.sh/beatmaps/${setId}/covers/cover.jpg`;
+
+    sd.mapMeta = sd.mapMeta || {};
+    sd.mapMeta[key] = {
+      sourceUrl: input.value.trim(),
+      setId: setId, beatmapId: b.id,
+      cover: cover.split('?')[0],
+      title: set.title || '', artist: set.artist || '', mapper: set.creator || '',
+      version: b.version || '',
+      sr: b.difficulty_rating, ar: b.ar, cs: b.cs, od: b.accuracy, hp: b.drain,
+      bpm: b.bpm, length: b.total_length || b.hit_length
+    };
+    if (!saveState()) { st.textContent = 'Storage full — could not save.'; st.className = 'fetch-status err'; return; }
+    st.textContent = `Loaded: ${set.title || setId} [${b.version || ''}]`; st.className = 'fetch-status ok';
+    renderMappoolAdmin();
+    if (state.page === 'mappool') renderMappool();
+  } catch (e) {
+    st.textContent = 'Error: ' + e.message + ' (map may not exist on osu!).'; st.className = 'fetch-status err';
+  }
+}
+
+function clearMapMeta(key) {
+  const t = admT();
+  if (!t) return;
+  const sd = getStageData(t, state.adminStage);
+  if (sd.mapMeta) delete sd.mapMeta[key];
+  saveState();
+  renderMappoolAdmin();
+  if (state.page === 'mappool') renderMappool();
+}
+
+// ==================== TEAMS PAGE ====================
+function openTeams() {
+  if (!curT() && state.tournaments.length) state.currentTournamentId = state.tournaments[0].id;
+  state.page = 'teams';
+  state.currentMatchId = null;
+  saveState();
+  syncURL();
+  applyPage();
+}
+
+function curTeams() {
+  const t = curT();
+  if (!t) return [];
+  if (!t.teams) t.teams = [];
+  return t.teams;
+}
+
+// ---- osudroid.moe identity helpers (avatar + profile from a numeric player ID) ----
+// Avatars/profiles on osudroid.moe are keyed by numeric uid, e.g.
+// https://osudroid.moe/user/avatar/173730.png  and  https://osudroid.moe/profile.php?uid=173730
+function droidUid(p) {
+  const raw = (p && (p.uid != null ? p.uid : p.id));
+  const s = String(raw == null ? '' : raw).trim();
+  return /^\d+$/.test(s) ? s : '';
+}
+function avatarURL(p) {
+  if (p && p.avatar) return p.avatar;            // explicit override wins
+  const uid = droidUid(p);
+  return uid ? `https://osudroid.moe/user/avatar/${uid}.png` : '';
+}
+function profileURL(p) {
+  if (p && p.profile) return p.profile;          // explicit override wins
+  const uid = droidUid(p);
+  return uid ? `https://osudroid.moe/profile.php?uid=${uid}` : '';
+}
+
+// Map a match-history nickname → its team-roster player entry (for avatars in the
+// profile modal, which only knows nicknames). Case-insensitive, built per current tournament.
+function rosterByName() {
+  const map = {};
+  for (const team of curTeams()) {
+    for (const p of (team.players || [])) {
+      const key = (p.droid || '').trim().toLowerCase();
+      if (key && !map[key]) map[key] = p;
+    }
+  }
+  return map;
+}
+
+function renderTeams() {
+  const t = curT();
+  const titleEl = document.getElementById('teams-title');
+  const body = document.getElementById('teams-body');
+  if (!body) return;
+  if (titleEl && t) titleEl.innerHTML = tournamentNameHTML(t.name) + ' <span style="color:var(--muted);font-weight:600;">— Teams</span>';
+  if (!t) { body.innerHTML = noTournamentHTML(); return; }
+  const teams = curTeams();
+  const canEdit = adminVisible();
+
+  let html = '<div class="teams-grid">';
+  for (const team of teams) {
+    const players = team.players || [];
+    html += `<div class="team-card">
+      <div class="team-card-head">
+        <span class="team-name">${escAttr(team.name)}</span>
+        <span class="team-count">${players.length} player${players.length !== 1 ? 's' : ''}</span>
+        ${canEdit ? `<button class="team-edit-btn" onclick="openTeamEditor('${escJsAttr(team.id)}')">Edit</button>
+          <button class="team-edit-btn team-del-btn" onclick="deleteTeam('${escJsAttr(team.id)}')">✕</button>` : ''}
+      </div>
+      <div class="team-players">`;
+    if (!players.length) {
+      html += `<div class="team-empty">No players yet.</div>`;
+    } else {
+      for (const p of players) {
+        const avUrl = avatarURL(p);
+        const av = avUrl ? `style="background-image:url('${escAttr(avUrl)}')"` : '';
+        const profUrl = profileURL(p);
+        const nameHtml = profUrl
+          ? `<a class="pl-droid" href="${escAttr(profUrl)}" target="_blank" rel="noopener">${escAttr(p.droid || '—')}</a>`
+          : `<span class="pl-droid">${escAttr(p.droid || '—')}</span>`;
+        html += `<div class="team-player">
+          <div class="pl-avatar" ${av}></div>
+          <div class="pl-info">
+            <div class="pl-top">${nameHtml}${p.rank ? `<span class="pl-rank">#${escAttr(String(p.rank))}</span>` : ''}</div>
+            ${p.discord ? `<div class="pl-discord">${escAttr(p.discord)}</div>` : ''}
+          </div>
+        </div>`;
+      }
+    }
+    html += `</div></div>`;
+  }
+  if (!teams.length && !canEdit) {
+    html += `<div class="empty"><b>No teams yet</b><p>Reveal Admin (add <code>#admin</code> to the URL) to add teams.</p></div>`;
+  }
+  if (canEdit) {
+    html += `<div class="team-add-card" onclick="openTeamEditor(null)">＋ Add Team</div>`;
+  }
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+// ---- team editor modal ----
+let teamDraft = null;
+
+function openTeamEditor(id) {
+  const t = curT();
+  if (!t) return;
+  if (!t.teams) t.teams = [];
+  if (id) {
+    const team = t.teams.find(x => x.id === id);
+    if (!team) return;
+    teamDraft = { id: team.id, name: team.name, players: (team.players || []).map(p => ({ ...p })) };
+    document.getElementById('team-modal-title').textContent = 'Edit Team';
+  } else {
+    teamDraft = { id: null, name: '', players: [{ droid: '', uid: '', discord: '', avatar: '', rank: '', profile: '' }] };
+    document.getElementById('team-modal-title').textContent = 'New Team';
+  }
+  document.getElementById('team-name-input').value = teamDraft.name;
+  renderPlayerRows();
+  document.getElementById('team-modal').classList.add('show');
+}
+
+function renderPlayerRows() {
+  const c = document.getElementById('team-players-edit');
+  c.innerHTML = (teamDraft.players || []).map((p, i) => {
+    const prevUrl = avatarURL(p);
+    const prev = prevUrl ? `style="background-image:url('${escAttr(prevUrl)}')"` : '';
+    return `
+    <div class="tp-edit-row" data-i="${i}">
+      <div class="tp-e-prev" ${prev}></div>
+      <input class="tp-e-droid" placeholder="osu!droid username" value="${escAttr(p.droid || '')}">
+      <input class="tp-e-uid" placeholder="player ID" value="${escAttr(p.uid || '')}" oninput="onUidInput(${i})">
+      <button class="tp-e-fetch" onclick="fetchDroidProfile(${i})" title="Fetch username + rank from player ID">Fetch</button>
+      <input class="tp-e-rank" placeholder="dpp rank" value="${escAttr(p.rank || '')}">
+      <input class="tp-e-discord" placeholder="Discord username" value="${escAttr(p.discord || '')}">
+      <input class="tp-e-avatar" placeholder="Avatar URL (override, optional)" value="${escAttr(p.avatar || '')}">
+      <input class="tp-e-profile" placeholder="Profile URL (override, optional)" value="${escAttr(p.profile || '')}">
+      <button class="tp-e-del" onclick="removePlayerRow(${i})" title="Remove">✕</button>
+      <div class="tp-e-status" data-i="${i}"></div>
+    </div>`;
+  }).join('') || '<div style="font-size:12px;color:var(--muted);">No players yet — add one below.</div>';
+}
+
+// Live avatar preview as the player ID is typed (no fetch, just the deterministic URL).
+function onUidInput(i) {
+  const row = document.querySelector(`#team-players-edit .tp-edit-row[data-i="${i}"]`);
+  if (!row) return;
+  const uid = row.querySelector('.tp-e-uid').value.trim();
+  const ovr = row.querySelector('.tp-e-avatar').value.trim();
+  const prev = row.querySelector('.tp-e-prev');
+  const url = ovr || (/^\d+$/.test(uid) ? `https://osudroid.moe/user/avatar/${uid}.png` : '');
+  prev.style.backgroundImage = url ? `url('${url}')` : '';
+}
+
+// Fetch username + PP rank from osudroid.moe by player ID.
+// The profile page sends no CORS header, so we read it through a CORS proxy and
+// scrape the server-rendered HTML.
+//
+// PROXY_BASE: your own Cloudflare Worker (see droid-proxy-worker.js). When set, it is
+// tried FIRST and is reliable. Paste your worker URL here, e.g.
+//   const PROXY_BASE = 'https://droid-proxy.yourname.workers.dev';
+// Leave '' to rely only on the flaky public proxies below.
+const PROXY_BASE = '';
+
+// Public fallbacks (used when PROXY_BASE is empty or down). Often rate-limited/offline.
+const CORS_PROXIES = [
+  enc => ({ url: 'https://api.allorigins.win/get?url=' + enc, json: true }),
+  enc => ({ url: 'https://corsproxy.io/?url=' + enc }),
+  enc => ({ url: 'https://api.codetabs.com/v1/proxy?quest=' + enc }),
+  enc => ({ url: 'https://thingproxy.freeboard.io/fetch/' + decodeURIComponent(enc) }),
+];
+
+function looksLikeProfileHTML(html) {
+  return html && html.length > 500 && !/^error code:/i.test(html.trim());
+}
+
+async function fetchProfileHTML(uid) {
+  // 1) Your own worker first (stable): /?uid=<id>
+  if (PROXY_BASE) {
+    try {
+      const r = await fetch(PROXY_BASE.replace(/\/+$/, '') + '/?uid=' + encodeURIComponent(uid));
+      if (r.ok) { const html = await r.text(); if (looksLikeProfileHTML(html)) return html; }
+    } catch (_) { /* fall through to public proxies */ }
+  }
+  // 2) Public proxies as fallback
+  const target = `https://osudroid.moe/profile.php?uid=${uid}`;
+  const enc = encodeURIComponent(target);
+  for (const make of CORS_PROXIES) {
+    const { url, json } = make(enc);
+    try {
+      const r = await fetch(url);
+      if (!r.ok) continue;
+      const html = json ? ((await r.json()).contents || '') : await r.text();
+      if (looksLikeProfileHTML(html)) return html;
+    } catch (_) { /* try next proxy */ }
+  }
+  return '';
+}
+
+async function fetchDroidProfile(i) {
+  const row = document.querySelector(`#team-players-edit .tp-edit-row[data-i="${i}"]`);
+  if (!row) return;
+  const uid = row.querySelector('.tp-e-uid').value.trim();
+  const status = row.querySelector('.tp-e-status');
+  if (!/^\d+$/.test(uid)) { status.textContent = 'Enter a numeric player ID first.'; status.className = 'tp-e-status err'; return; }
+
+  status.textContent = 'Fetching…'; status.className = 'tp-e-status';
+  try {
+    const html = await fetchProfileHTML(uid);
+    if (!html) throw new Error('all proxies unavailable — try again or fill in manually');
+
+    const info = parseDroidProfile(html, uid);
+    if (!info.name) throw new Error('player not found (check the ID)');
+
+    const dn = row.querySelector('.tp-e-droid');
+    const rk = row.querySelector('.tp-e-rank');
+    dn.value = info.name;
+    if (info.ppRank) rk.value = info.ppRank;
+    onUidInput(i);
+    const bits = [info.name];
+    if (info.ppRank) bits.push('PP rank #' + info.ppRank);
+    status.textContent = '✓ ' + bits.join(' · '); status.className = 'tp-e-status ok';
+  } catch (e) {
+    status.textContent = 'Error: ' + e.message + '.';
+    status.className = 'tp-e-status err';
+  }
+}
+
+// Scrape username + PP rank from the profile.php HTML.
+// Header markup: "<a ...>Willumina</a> ... uid ‹ 173730 ›" and "PP Rank: <a># 23</a>".
+function parseDroidProfile(html, uid) {
+  let name = '';
+  // The username anchor sits right before the "uid ‹ <id> ›" anchor.
+  const anchors = [...html.matchAll(/<a[^>]*>([^<]*)<\/a>/g)].map(m => m[1].trim());
+  const uidIdx = anchors.findIndex(a => a.replace(/[^\d]/g, '') === uid && /uid/i.test(a));
+  if (uidIdx > 0) name = anchors[uidIdx - 1].trim();
+  // Fallback: first non-empty anchor that isn't the uid/Profile/menu boilerplate.
+  if (!name) {
+    name = anchors.find(a => a && !/^uid|Profile$|Login|Register|#/.test(a)) || '';
+  }
+  let ppRank = '';
+  const m = html.match(/PP\s*Rank:\s*<a>\s*#?\s*([0-9,]+)/i);
+  if (m) ppRank = m[1].replace(/,/g, '');
+  return { name, ppRank };
+}
+
+function readPlayerRows() {
+  return [...document.querySelectorAll('#team-players-edit .tp-edit-row')].map(r => ({
+    droid: r.querySelector('.tp-e-droid').value.trim(),
+    uid: r.querySelector('.tp-e-uid').value.trim(),
+    rank: r.querySelector('.tp-e-rank').value.trim(),
+    discord: r.querySelector('.tp-e-discord').value.trim(),
+    avatar: r.querySelector('.tp-e-avatar').value.trim(),
+    profile: r.querySelector('.tp-e-profile').value.trim()
+  })).filter(p => p.droid || p.discord || p.avatar || p.rank || p.uid);
+}
+
+function addPlayerRow() {
+  teamDraft.players = readPlayerRows();
+  teamDraft.players.push({ droid: '', uid: '', discord: '', avatar: '', rank: '', profile: '' });
+  renderPlayerRows();
+}
+
+function removePlayerRow(i) {
+  teamDraft.players = readPlayerRows();
+  teamDraft.players.splice(i, 1);
+  renderPlayerRows();
+}
+
+function saveTeamEditor() {
+  const t = curT();
+  if (!t || !teamDraft) return;
+  if (!t.teams) t.teams = [];
+  const name = document.getElementById('team-name-input').value.trim() || 'Team';
+  const players = readPlayerRows();
+  if (teamDraft.id) {
+    const team = t.teams.find(x => x.id === teamDraft.id);
+    if (team) { team.name = name; team.players = players; }
+  } else {
+    t.teams.push({ id: 'tm' + Date.now() + Math.floor(Math.random() * 1000), name, players });
+  }
+  if (!saveState()) { alert('Storage full — could not save.'); return; }
+  closeTeamEditor();
+  renderTeams();
+}
+
+function deleteTeam(id) {
+  const t = curT();
+  if (!t || !t.teams) return;
+  const team = t.teams.find(x => x.id === id);
+  if (!confirm(`Delete team "${team ? team.name : ''}"?`)) return;
+  t.teams = t.teams.filter(x => x.id !== id);
+  saveState();
+  renderTeams();
+}
+
+function closeTeamEditor() { document.getElementById('team-modal').classList.remove('show'); teamDraft = null; }
+function handleTeamOverlayClick(e) { if (e.target === document.getElementById('team-modal')) closeTeamEditor(); }
+
+function saveChallonge() {
+  const t = admT();
+  const st = document.getElementById('challonge-status');
+  if (!t) { st.textContent = 'Select a tournament first.'; st.className = 'fetch-status err'; return; }
+  const raw = document.getElementById('challonge-input').value;
+  const slug = parseChallongeSlug(raw);
+  if (!slug) { st.textContent = 'Could not read a tournament slug.'; st.className = 'fetch-status err'; return; }
+  t.challongeSlug = slug;
+  saveState();
+  st.textContent = `Saved: ${slug}`; st.className = 'fetch-status ok';
+  if (state.page === 'bracket') renderBracket();
+}
+
+function fillChallongeField() {
+  const t = admT();
+  const ci = document.getElementById('challonge-input');
+  if (ci) ci.value = (t && t.challongeSlug) ? `https://challonge.com/${t.challongeSlug}` : '';
+}
+
+function parseChallongeSlug(raw) {
+  if (!raw) return '';
+  raw = raw.trim();
+  const m = raw.match(/challonge\.com\/([A-Za-z0-9_]+)/);
+  if (m) return m[1];
+  const s = raw.match(/([A-Za-z0-9_]+)\s*$/);
+  return s ? s[1] : '';
+}
+
+function renderBracket() {
+  const t = curT();
+  const c = document.getElementById('bracket-body');
+  const link = document.getElementById('bracket-open-link');
+  const titleEl = document.getElementById('bracket-title');
+  if (titleEl && t) titleEl.innerHTML = `${escAttr(t.name)} — Bracket`;
+
+  const slug = t ? (t.challongeSlug || '') : '';
+
+  if (!slug) {
+    c.innerHTML = `<div class="bracket-empty">
+      <b style="font-size:16px;color:var(--text);">No bracket linked</b>
+      <p style="margin-top:8px;">Open the Admin panel and paste this tournament's Challonge URL under “Bracket”.</p>
+    </div>`;
+    if (link) link.style.display = 'none';
+    return;
+  }
+
+  if (link) {
+    link.style.display = '';
+    link.href = `https://challonge.com/${slug}`;
+  }
+
+  const src = `https://challonge.com/${encodeURIComponent(slug)}/module?theme=1&multiplier=1&match_width_multiplier=1&show_final_results=1&show_standings=0`;
+  c.innerHTML = `<div class="bracket-embed-wrap">
+    <iframe class="bracket-embed" src="${escAttr(src)}" allowtransparency="true" loading="lazy"></iframe>
+  </div>`;
+}
+
+function setLbSort(key) {
+  if (state.lbSort.key === key) {
+    state.lbSort.dir = state.lbSort.dir === 'desc' ? 'asc' : 'desc';
+  } else {
+    state.lbSort.key = key;
+    state.lbSort.dir = key === 'player' ? 'asc' : 'desc';
+  }
+  saveState();
+  renderLeaderboard();
+}
+
+// ==================== HELPERS ====================
+function slotClass(slot) {
+  if (!slot) return 's-xx';
+  const u = slot.toUpperCase();
+  if (u.startsWith('NM')) return 's-nm';
+  if (u.startsWith('HD')) return 's-hd';
+  if (u.startsWith('HR')) return 's-hr';
+  if (u.startsWith('DT')) return 's-dt';
+  if (u.startsWith('FL')) return 's-fl';
+  if (u.startsWith('TB')) return 's-tb';
+  if (u.startsWith('PR')) return 's-pr';
+  if (u.startsWith('FM')) return 's-fm';
+  return 's-xx';
+}
+
+function modPills(mods) {
+  if (!mods.length) return '<span class="mp mp-NM">NM</span>';
+  return mods.map(m => {
+    const c = ['NM','HD','HR','DT','NC','FL','PR','FM','EZ'].includes(m)?'mp-'+m:'mp-XX';
+    return `<span class="mp ${c}">${m}</span>`;
+  }).join('');
+}
+
+function accCls(acc) { return 'ah'; }
+
+function removeMap(key) {
+  const t = admT();
+  if (!t) return;
+  const sd = getStageData(t, state.adminStage);
+  sd.mapOrder = sd.mapOrder.filter(k => k !== key);
+  delete sd.slotOverrides[key];
+  saveState();
+  renderAdminMapOrder();
+  renderAll();
+}
+
+function escAttr(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function escJsAttr(s) {
+  return String(s).replace(/\\/g,'\\\\').replace(/'/g,'\\u0027').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ==================== PLAYER PROFILE ====================
+function openProfile(name) {
+  const t = curT();
+  if (!t) return;
+  const stage = state.currentStage;
+  const sd = getStageData(t, stage);
+  const maps = getOrderedMaps(t, stage).filter(({info}) => !info._empty);
+
+  const scores = [];
+  for (const {key, info} of maps) {
+    const slot = getSlot(sd, key, info.mapName) || '??';
+    const displayName = info.mapName.replace(/\[(?:NM|HD|HR|DT|NC|FM|PR|FL|TB|EZ)\d*\]\s*/i,'').trim();
+    for (const p of getPlayerScores(info)) {
+      if (p.userName === name) {
+        const mods = (p.playMod||[]).map(m=>m.acronym).filter(m=>m!=='V2');
+        scores.push({ slot, map: displayName, score: p.score, acc: p.accuracy*100, mods, match: p._matchName || info.matchName || '' });
+      }
+    }
+  }
+
+  if (!scores.length) return;
+
+  const totalScore = scores.reduce((s,x)=>s+x.score,0);
+  const avgScore = Math.round(totalScore / scores.length);
+  const avgAcc = scores.reduce((s,x)=>s+x.acc,0) / scores.length;
+  const best = scores.reduce((m,x)=>x.score>m.score?x:m, scores[0]);
+
+  const slotCount = {};
+  scores.forEach(s => { const cat = s.slot.replace(/\d+/g,''); slotCount[cat]=(slotCount[cat]||0)+1; });
+  const favMod = Object.entries(slotCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || '—';
+
+  // Match the match-history nickname against the team roster to pull a real avatar + profile link.
+  const rp = rosterByName()[name.trim().toLowerCase()];
+  const avEl = document.getElementById('profile-avatar');
+  const avUrl = rp ? avatarURL(rp) : '';
+  if (avUrl) {
+    avEl.textContent = '';
+    avEl.style.backgroundImage = `url('${avUrl}')`;
+    avEl.classList.add('has-img');
+  } else {
+    avEl.style.backgroundImage = '';
+    avEl.classList.remove('has-img');
+    avEl.textContent = name.charAt(0).toUpperCase();
+  }
+  const profUrl = rp ? profileURL(rp) : '';
+  document.getElementById('profile-name').innerHTML = profUrl
+    ? `<a href="${escAttr(profUrl)}" target="_blank" rel="noopener" class="profile-name-link">${escAttr(name)}</a>`
+    : escAttr(name);
+  document.getElementById('profile-stage').textContent = `${t.name} · ${stage} · ${scores.length} map${scores.length>1?'s':''} played`;
+
+  let body = `<div class="profile-stats">
+    <div class="pstat"><div class="pstat-val" data-count="${avgScore}">0</div><div class="pstat-lbl">Avg Score</div></div>
+    <div class="pstat"><div class="pstat-val">${avgAcc.toFixed(2)}%</div><div class="pstat-lbl">Avg Acc</div></div>
+    <div class="pstat"><div class="pstat-val" data-count="${best.score}">0</div><div class="pstat-lbl">Best Score</div></div>
+    <div class="pstat"><div class="pstat-val">${favMod}</div><div class="pstat-lbl">Top Mod</div></div>
+  </div>
+  <div class="profile-section-title">Scores in ${stage}</div>
+  <table class="profile-scores"><thead><tr>
+    <th style="width:48px;">Slot</th><th>Map</th>
+    <th class="r" style="width:110px;">Score</th>
+    <th class="r" style="width:80px;">Acc</th>
+    <th class="r" style="width:90px;">Mods</th>
+  </tr></thead><tbody>`;
+
+  scores.sort((a,b)=>b.score-a.score).forEach((s,i)=>{
+    const delay = Math.min(i*0.04, 0.4);
+    body += `<tr style="animation-delay:${delay}s">
+      <td><span class="slot-badge ${slotClass(s.slot)}" style="font-size:10px;padding:2px 6px;">${s.slot}</span></td>
+      <td style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;" title="${escAttr(s.map)}">${s.map}</td>
+      <td class="r">${s.score.toLocaleString()}</td>
+      <td class="r">${s.acc.toFixed(2)}%</td>
+      <td class="r">${modPills(s.mods)}</td>
+    </tr>`;
+  });
+
+  body += '</tbody></table>';
+  document.getElementById('profile-body').innerHTML = body;
+  document.getElementById('profile-modal').classList.add('show');
+  animateCounts(document.getElementById('profile-body'));
+}
+
+function closeProfile() { document.getElementById('profile-modal').classList.remove('show'); }
+function handleProfileOverlayClick(e) {
+  if (e.target === document.getElementById('profile-modal')) closeProfile();
+}
+
+// ==================== ADMIN PASSWORD ====================
+// Password is stored as a SHA-256 hash, NOT plaintext — the real password
+// cannot be read from this file. To change it, compute a new hash:
+//   printf '%s' 'yourpassword' | sha256sum
+// Current default password hash is for: admin123
+const ADMIN_PASSWORD_HASH = '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9';
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// The Admin button stays hidden until the user visits the page with #admin
+// in the URL. This keeps admin controls invisible to ordinary visitors.
+function revealAdminIfRequested() {
+  if (location.hash.toLowerCase() === '#admin') {
+    const b1 = document.getElementById('admin-toggle-btn');
+    if (b1) b1.style.display = '';
+    if (state.page === 'home') renderHome(); // show the +Add card
+  }
+}
+window.addEventListener('hashchange', revealAdminIfRequested);
+revealAdminIfRequested();
+
+async function toggleAdmin() {
+  const ov = document.getElementById('admin-overlay');
+  const btn = document.getElementById('admin-toggle-btn');
+  const isOpen = ov.classList.contains('show');
+  if (isOpen) {
+    ov.classList.remove('show');
+    btn.classList.remove('active');
+    // refresh public views so admin-only controls (e.g. the in-match add-score form) appear
+    if (state.page === 'stats') renderAll();
+    return;
+  }
+  const input = prompt('Enter admin password:');
+  if (input === null) return;
+  const hash = await sha256(input);
+  if (hash !== ADMIN_PASSWORD_HASH) {
+    alert('Wrong password.');
+    return;
+  }
+  adminUnlocked = true;
+  ov.classList.add('show');
+  btn.classList.add('active');
+  // edit the tournament that's currently open (or first)
+  state.adminTournamentId = state.currentTournamentId || (state.tournaments[0] && state.tournaments[0].id);
+  state.adminStage = state.currentStage;
+  buildAdminStagePills();
+  renderAdminTournaments();
+  fillTournamentInfoFields();
+  buildAdminStageVisibility();
+  renderAdminMatchList();
+  renderAdminMapOrder();
+  fillChallongeField();
+  // logo preview
+  const lp = document.getElementById('logo-preview');
+  if (lp) { if (state.logo) { lp.src = state.logo; lp.classList.add('show'); } else { lp.classList.remove('show'); } }
+  // home background preview
+  const sp = document.getElementById('splashbg-preview');
+  if (sp) { if (state.splashBg) { sp.style.backgroundImage = `url('${state.splashBg}')`; sp.classList.add('show'); } else { sp.style.backgroundImage = ''; sp.classList.remove('show'); } }
+}
+</script>
+</body>
+</html>
