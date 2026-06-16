@@ -2614,10 +2614,14 @@ function renderMappool() {
     if (meta.od != null) diffBits.push(`OD ${meta.od}`);
     if (meta.hp != null) diffBits.push(`HP ${meta.hp}`);
 
-    // prefer parsed mapName (played maps); fall back to fetched meta (unplayed slots have no mapName)
-    const rawTitle = p.title || meta.title || info.mapName || '(map)';
-    const artist = p.artist || meta.artist || '';
-    // artist sits left of the track name, e.g. "nui - Mayday" (consistent with played maps)
+    // Build "artist - title" from a SINGLE source to avoid duplicating the artist.
+    // (osu!droid mapNames may use "artist - title" with a hyphen, which parseMapName
+    // can't split on a comma — so its `title` already contains the artist. Mixing that
+    // with meta.artist would double it, e.g. "sokoninaru - sokoninaru - METALIN".)
+    let artist, rawTitle;
+    if (meta.title) { artist = meta.artist || ''; rawTitle = meta.title; }
+    else if (p.artist) { artist = p.artist; rawTitle = p.title; }
+    else { artist = ''; rawTitle = p.title || info.mapName || '(map)'; }
     const titleLine = artist ? `${artist} - ${rawTitle}` : rawTitle;
     const version = meta.version || p.version || '';
     const mapper = p.mapper || meta.mapper || '';
@@ -2929,7 +2933,7 @@ function onUidInput(i) {
 //
 // PROXY_BASE: your own Cloudflare Worker (see droid-proxy-worker.js). When set, it is
 // tried FIRST and is reliable. Paste your worker URL here, e.g.
-//   const PROXY_BASE = 'https://droid-proxy.yourname.workers.dev';
+//   const PROXY_BASE = 'https://droid-proxy.mailvigre.workers.dev';
 // Leave '' to rely only on the flaky public proxies below.
 const PROXY_BASE = '';
 
