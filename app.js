@@ -84,16 +84,29 @@ function getStageData(t, stage) {
   return sd;
 }
 
+// localStorage quota (~5MB) can overflow when the state carries many base64 images.
+// Warn once per session (not on every navigation), and keep the remote push working
+// even when the local cache write fails — the Worker copy has no such limit.
+let storageFullWarned = false;
 function saveState() {
+  state.updatedAt = Date.now();
+  let ok = true;
   try {
-    state.updatedAt = Date.now();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    schedulePush();
-    return true;
   } catch(e) {
-    alert('Could not save — browser storage is full. Try a smaller banner/logo image.');
-    return false;
+    ok = false;
+    if (!storageFullWarned) {
+      storageFullWarned = true;
+      const size = Math.round(JSON.stringify(state).length / 1024);
+      alert(`Local browser storage is full (state is ~${size} KB, browsers allow ~5000 KB).\n\n`
+        + `Your data is still synced to the server, but the offline cache can't update.\n`
+        + `To fix: re-upload smaller banner / logo / splash background images (Admin → Media), `
+        + `or delete unused tournaments.`);
+    }
+    setSyncStatus('Local cache full — remote only', 'err');
   }
+  schedulePush(); // remote sync must run even if the local cache write failed
+  return ok;
 }
 
 function loadState() {
@@ -4268,10 +4281,47 @@ function refreshAdminPanel() {
   renderAdminMatchList();
   renderAdminMapOrder();
   fillChallongeField();
+  renderStorageUsage();
   const lp = document.getElementById('logo-preview');
   if (lp) { if (state.logo) { lp.src = state.logo; lp.classList.add('show'); } else { lp.classList.remove('show'); } }
   const sp = document.getElementById('splashbg-preview');
   if (sp) { if (state.splashBg) { sp.style.backgroundImage = `url('${state.splashBg}')`; sp.classList.add('show'); } else { sp.style.backgroundImage = ''; sp.classList.remove('show'); } }
+}
+
+// ---- storage usage panel (admin → Danger) ----
+// Shows total state size vs the ~5MB localStorage quota, plus a per-item breakdown
+// of the embedded base64 images so it's obvious what to shrink when full.
+function renderStorageUsage() {
+  const el = document.getElementById('storage-usage');
+  if (!el) return;
+  const kb = s => Math.round((s || '').length / 1024);
+  const total = kb(JSON.stringify(state));
+  const LIMIT = 5000; // ≈ localStorage quota in KB
+  const pct = Math.min(100, Math.round(total / LIMIT * 100));
+
+  // collect embedded images: site-wide + per tournament
+  const items = [];
+  if (state.logo) items.push({ label: 'Site logo', size: kb(state.logo) });
+  if (state.splashBg) items.push({ label: 'Splash background', size: kb(state.splashBg) });
+  for (const t of state.tournaments) {
+    if (t.banner) items.push({ label: `Banner — ${t.name}`, size: kb(t.banner) });
+    // match data can be big too (per-tournament, everything except the banner)
+    const dataSize = kb(JSON.stringify(t)) - kb(t.banner || '');
+    items.push({ label: `Data — ${t.name} (matches, teams, mappool…)`, size: dataSize });
+  }
+  items.sort((a, b) => b.size - a.size);
+
+  const over = total > LIMIT;
+  const barCls = over ? 'err' : (pct > 80 ? 'warn' : '');
+  const rows = items.map(it => `<div class="su-row">
+    <span class="su-label" title="${escAttr(it.label)}">${escAttr(it.label)}</span>
+    <span class="su-size">${it.size.toLocaleString()} KB</span>
+  </div>`).join('');
+
+  el.innerHTML = `
+    <div class="su-bar"><div class="su-fill ${barCls}" style="width:${pct}%"></div></div>
+    <div class="su-total ${over ? 'err' : ''}">${total.toLocaleString()} / ~${LIMIT.toLocaleString()} KB${over ? ' — over the local limit! Offline cache is not saving.' : ''}</div>
+    <div class="su-list">${rows}</div>`;
 }
 
 async function toggleAdmin() {
