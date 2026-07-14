@@ -116,6 +116,14 @@ function loadState() {
   } catch(e) {}
 }
 
+// True once the admin password has been entered this session (stays true after the
+// overlay is closed, so admin-only controls like the in-match add-score form remain
+// visible while browsing the public views). Reset on page reload.
+// ⚠️ Declared here (before the INIT block runs applyPage/renderAll) — adminVisible()
+// reads it during the first render, and a `let` below that point would throw (TDZ).
+let adminUnlocked = false;
+function isAdminUnlocked() { return adminUnlocked; }
+
 // ==================== REMOTE SYNC (Cloudflare Worker + KV) ====================
 // Shared dataset across devices with server-side write protection. Offline-first:
 // localStorage is the instant cache + fallback; the Worker is the source of truth
@@ -2539,12 +2547,6 @@ function teamName(t, i) {
   if (i === 1) return (t && t.teamBlue && t.teamBlue.trim()) || 'Blue';
   return 'Team ' + (i + 1);
 }
-// True once the admin password has been entered this session (stays true after the
-// overlay is closed, so admin-only controls like the in-match add-score form remain
-// visible while browsing the public views). Reset on page reload.
-let adminUnlocked = false;
-function isAdminUnlocked() { return adminUnlocked; }
-
 const ADMIN_TABS = ['media','tournament','bracket','stages','matches','mappool','danger'];
 let adminTab = 'tournament';
 try { adminTab = localStorage.getItem('odt_admin_tab') || adminTab; } catch(e) {}
