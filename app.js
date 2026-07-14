@@ -29,6 +29,7 @@ function newTournament(name, opts={}) {
     prizePool: opts.prizePool || '',      // prize pool shown in General Info
     elimination: opts.elimination || '',  // bracket type, e.g. "Single Elimination, Double Elim from RO16"
     staff: opts.staff || [],              // [{ role, name, uid, discord, avatar }] one person per entry
+    aliases: opts.aliases || {},          // { 'oldnicklower': 'CanonicalNick' } — merges a player's alt nicks into one profile
     matchSchedule: opts.matchSchedule || [], // [{ matchId, roomId, roomLink, time, p1, score1, score2, p2, referee, streamer, commentator, streamLink }]
     bracket: opts.bracket || { type: 'double', size: 8, participants: [], scores: {}, slots: {} }, // custom bracket engine
     hiddenStages: {},                     // { RO32: true } = hidden from stage bar
@@ -256,6 +257,8 @@ function ensureSeed() {
   }
   // assign a stable URL slug to any tournament missing one (migration + new tournaments)
   for (const t of state.tournaments) ensureSlug(t);
+  // migrate: older tournaments predate the name-alias map
+  for (const t of state.tournaments) if (!t.aliases || typeof t.aliases !== 'object') t.aliases = {};
   // migrate legacy staff rows ({role, members:"a, b"}) → one person per entry ({role, name})
   for (const t of state.tournaments) {
     if (Array.isArray(t.staff) && t.staff.some(s => s && s.members != null && s.name == null)) {
@@ -609,6 +612,10 @@ function readStateFromURL() {
   else if (page === 'stats') state.page = 'stats';
   // a bare tournament link (slug/id with no explicit page) lands on the overview
   else if (t) state.page = (stage || view || match) ? 'stats' : 'overview';
+  // a bare URL (no page param, no tournament, no match/stage/view) is the home
+  // gallery — this makes browser Back to "/" actually show home, not leave a
+  // stale inner page visible.
+  else if (!match && !stage && !view) state.page = 'home';
 }
 
 // URL param for the current tournament: readable slug when available, legacy id otherwise
@@ -702,9 +709,11 @@ function statusClass(status) {
   return 'upcoming';
 }
 
+// True only после ввода пароля. Раньше проверялась лишь видимость кнопки Admin
+// (#admin в URL) — из-за этого «＋ Add Tournament» и правка команд были доступны
+// любому, кто дописал #admin, без пароля.
 function adminVisible() {
-  const b = document.getElementById('admin-toggle-btn');
-  return b && b.style.display !== 'none';
+  return isAdminUnlocked();
 }
 
 function renderHome() {
@@ -1364,6 +1373,7 @@ function fillTournamentInfoFields() {
   renderScheduleEditor();
   renderStaffEditor();
   renderMsEditor();
+  renderAliasEditor();
   fillBracketFields();
   // banner preview
   const bp = document.getElementById('banner-preview');
@@ -1398,6 +1408,7 @@ function saveTournamentInfo() {
   t.schedule = readScheduleRows();
   t.staff = readStaffRows();
   if (document.getElementById('meta-ms-rows')) t.matchSchedule = readMsRows();
+  if (document.getElementById('meta-alias-rows')) t.aliases = readAliasRows();
   const ok = saveState();
   const msg = document.getElementById('meta-status-msg');
   if (msg) { msg.textContent = ok ? 'Saved.' : ''; msg.className = 'fetch-status ok'; }
@@ -1445,6 +1456,66 @@ function removeScheduleRow(i) {
   t.schedule = readScheduleRows(true);
   t.schedule.splice(i, 1);
   renderScheduleEditor();
+}
+
+// ---- name-alias editor (admin) — merge a player's alt nicks into one canonical profile ----
+// Stored as t.aliases = { 'oldnicklower': 'CanonicalNick' }. Editor shows one row per pair.
+function renderAliasEditor() {
+  const c = document.getElementById('meta-alias-rows');
+  if (!c) return;
+  const t = admT();
+  const entries = (t && t.aliases) ? Object.entries(t.aliases) : [];
+  c.innerHTML = entries.map(([from, to], i) => `
+    <div class="alias-edit-row" data-i="${i}">
+      <input class="alias-e-from" placeholder="Old / alt nick" value="${escAttr(from)}">
+      <span class="alias-e-arrow">→</span>
+      <input class="alias-e-to" placeholder="Canonical nick" value="${escAttr(to)}">
+      <button class="sched-e-del" onclick="removeAliasRow(${i})" title="Remove">✕</button>
+    </div>`).join('');
+}
+
+function readAliasRows(keepEmpty) {
+  const rows = [...document.querySelectorAll('#meta-alias-rows .alias-edit-row')].map(r => ({
+    from: r.querySelector('.alias-e-from').value.trim(),
+    to: r.querySelector('.alias-e-to').value.trim()
+  }));
+  if (keepEmpty) return rows;
+  // Build the { fromLower: canonical } map, skipping incomplete or self-referential rows.
+  const map = {};
+  for (const { from, to } of rows) {
+    if (!from || !to || from.toLowerCase() === to.toLowerCase()) continue;
+    map[from.toLowerCase()] = to;
+  }
+  return map;
+}
+
+// Re-render the editor from the current DOM rows plus one blank/removed row.
+function aliasRowsToArray() {
+  return [...document.querySelectorAll('#meta-alias-rows .alias-edit-row')].map(r => ({
+    from: r.querySelector('.alias-e-from').value,
+    to: r.querySelector('.alias-e-to').value
+  }));
+}
+function renderAliasRowsFrom(arr) {
+  const c = document.getElementById('meta-alias-rows');
+  if (!c) return;
+  c.innerHTML = arr.map(({ from, to }, i) => `
+    <div class="alias-edit-row" data-i="${i}">
+      <input class="alias-e-from" placeholder="Old / alt nick" value="${escAttr(from || '')}">
+      <span class="alias-e-arrow">→</span>
+      <input class="alias-e-to" placeholder="Canonical nick" value="${escAttr(to || '')}">
+      <button class="sched-e-del" onclick="removeAliasRow(${i})" title="Remove">✕</button>
+    </div>`).join('');
+}
+function addAliasRow() {
+  const arr = aliasRowsToArray();
+  arr.push({ from: '', to: '' });
+  renderAliasRowsFrom(arr);
+}
+function removeAliasRow(i) {
+  const arr = aliasRowsToArray();
+  arr.splice(i, 1);
+  renderAliasRowsFrom(arr);
 }
 
 // ---- staff editor (admin) — one person per row, avatar from osudroid player ID ----
@@ -2010,8 +2081,10 @@ function buildSessMap(t, stage) {
   const map = {};
   for (const m of sd.matches) {
     const matchName = cleanMatchName(m.name, m);
+    const hidden = m.hiddenMaps || {};
     for (const s of m.sessions) {
       const key = sessKey(s);
+      if (hidden[key]) continue; // map removed by admin in match detail (✕)
       const taggedScores = (s.scores || []).map(sc => ({ ...sc, _matchName: matchName }));
       if (!map[key]) {
         map[key] = { ...s, scores: taggedScores, matchName };
@@ -2071,14 +2144,27 @@ function addEmptySlot(el) {
   renderAll();
 }
 
+// Resolve a nickname to its canonical form using the current tournament's alias map.
+// A player who changed nick between stages is registered as { oldnick: CanonicalNick }
+// so all their scores aggregate into one profile. Case-insensitive lookup.
+function canonName(name, t) {
+  t = t || curT();
+  if (!t || !t.aliases || !name) return name;
+  const canon = t.aliases[String(name).trim().toLowerCase()];
+  return canon || name;
+}
+
 function getPlayerScores(info) {
   const valid = (info.scores||[]).filter(s => s.team !== null && !(s.score===0 && !s.isAlive));
   // Dedupe per player: if a player has multiple scores on the same map (e.g. their team
-  // played two matches in a losers bracket), keep only their highest score.
+  // played two matches in a losers bracket), keep only their highest score. Nicknames are
+  // canonicalized first, so a player's alt nicks collapse into a single entry (highest kept).
   const best = new Map();
   for (const s of valid) {
-    const prev = best.get(s.userName);
-    if (!prev || s.score > prev.score) best.set(s.userName, s);
+    const cn = canonName(s.userName);
+    const rec = (cn !== s.userName) ? { ...s, userName: cn } : s;
+    const prev = best.get(cn);
+    if (!prev || rec.score > prev.score) best.set(cn, rec);
   }
   return [...best.values()];
 }
@@ -2250,6 +2336,7 @@ function renderMappoolStats() {
 
   const allScores = entries.flatMap(e => getPlayerScores(e.info));
   const players = new Set(allScores.map(s=>s.userName));
+  const roster = rosterByName();
   const matchNames = new Set();
   for (const st of currentStageList(t)) for (const m of (getStageData(t, st).matches || [])) matchNames.add(cleanMatchName(m.name, m));
   const playedMaps = entries.filter(e => !e.info._empty);
@@ -2321,7 +2408,7 @@ function renderMappoolStats() {
       const mods = (p.playMod||[]).map(m=>m.acronym).filter(m=>m!=='V2');
       html += `<div class="tp-row">
         <span class="tp-rank ${rc}">#${i+1}</span>
-        <span class="tp-name">${escAttr(p.userName)}</span>
+        <span class="tp-name">${flagForName(p.userName, roster)}${escAttr(p.userName)}</span>
         <span class="tp-score">${p.score.toLocaleString()}</span>
         <span class="tp-acc ${accCls(p.accuracy*100)}">${(p.accuracy*100).toFixed(2)}%</span>
         <span class="tp-mods">${modPills(mods)}</span>
@@ -2406,7 +2493,7 @@ function renderLeaderboard() {
         <th class="r" onclick="setLbSort('score')" style="width:110px;">Score${arrow('score')}</th>
         <th class="r" onclick="setLbSort('acc')" style="width:90px;">Accuracy${arrow('acc')}</th>
         <th class="r" style="width:130px;">Mods</th>
-        <th class="r" style="width:80px;">Match</th>
+        <th class="r" style="width:150px;">Match</th>
       </tr></thead><tbody>`;
 
     ps.forEach((p,i)=>{
@@ -2419,7 +2506,7 @@ function renderLeaderboard() {
         <td class="sc">${p.score.toLocaleString()}</td>
         <td class="ac">${acc}%</td>
         <td class="mod-pills-cell">${modPills(mods)}</td>
-        <td class="mc-cell" style="color:var(--muted);font-size:11px;">${escAttr(p._matchName || info.matchName || '')}</td>
+        <td class="mc-cell" title="${escAttr(p._matchName || info.matchName || '')}">${escAttr(p._matchName || info.matchName || '')}</td>
       </tr>`;
     });
 
@@ -2473,16 +2560,30 @@ function analyzeMatch(t, stage, m) {
   // and from the in-match add form), keyed by map session key.
   const manualForMatch = (sd.manualScores || []).filter(ms => ms.match === matchName);
 
+  // First collapse the match's own sessions by map key. Match history sometimes
+  // records the same map twice (a real session + an empty "[Image #1]" placeholder);
+  // without merging, a manual score keyed to that map would attach to BOTH copies,
+  // producing a duplicate map card and an extra tally point.
+  // Maps removed by the admin (✕ on the map card) live in m.hiddenMaps and are skipped.
+  const hidden = m.hiddenMaps || {};
+  const byKey = new Map();
+  for (const s of (m.sessions || [])) {
+    const key = sessKey(s);
+    if (hidden[key]) continue;
+    const prev = byKey.get(key);
+    if (!prev) byKey.set(key, { s, key, scores: [...(s.scores || [])] });
+    else prev.scores.push(...(s.scores || []));
+  }
+
   // For each played map, merge the match's own scores with any manual scores
   // attributed to this match on the same map.
-  const sessions = (m.sessions || []).map(s => {
-    const key = sessKey(s);
+  const sessions = [...byKey.values()].map(({ s, key, scores }) => {
     const manual = manualForMatch.filter(ms => ms.key === key).map(ms => ({
       userName: ms.userName, score: ms.score, accuracy: ms.accuracy,
       playMod: (ms.mods || []).map(a => ({ acronym: a })),
       team: (ms.team != null ? ms.team : 1), isAlive: true, _manual: true
     }));
-    return { s, key, scores: [...(s.scores || []), ...manual] };
+    return { s, key, scores: [...scores, ...manual] };
   });
 
   const teamSet = new Set();
@@ -2548,11 +2649,12 @@ function computeMatchCosts(a) {
 function matchCostHTML(a) {
   const costs = computeMatchCosts(a);
   if (!costs.length) return '';
+  const roster = rosterByName();
   const rows = costs.map((c, i) => {
     const cls = a.isTeamVs ? teamColorClass(c.team === 0 || c.team === '0' ? 0 : 1) : '';
     return `<div class="mm-cost-row${i === 0 ? ' mvp' : ''}">
       <span class="mm-cost-rank">${i + 1}</span>
-      <span class="mm-cost-name ${cls}">${escAttr(c.name)}</span>
+      <span class="mm-cost-name ${cls}">${flagForName(c.name, roster)}${escAttr(c.name)}</span>
       <span class="mm-cost-val">${c.cost.toFixed(2)}</span>
     </div>`;
   }).join('');
@@ -2560,6 +2662,31 @@ function matchCostHTML(a) {
     <div class="mm-cost-title">Match Cost</div>
     <div class="mm-cost-list">${rows}</div>
   </div>`;
+}
+
+// ---- hide/restore a map inside a match (admin ✕ on the map card) ----
+// Hidden maps are stored per match as m.hiddenMaps = { [sessKey]: true } and are
+// excluded from match detail AND from the stage-wide stats (buildSessMap).
+function hideMatchMap(matchId, key) {
+  const t = curT();
+  if (!t || !isAdminUnlocked()) return;
+  const sd = getStageData(t, state.currentStage);
+  const m = (sd.matches || []).find(x => x.id === matchId);
+  if (!m) return;
+  if (!confirm(`Remove this map from the match?\n\n${key}\n\nIt will also disappear from the stage stats. You can restore it from the "Removed maps" list at the bottom of the match.`)) return;
+  (m.hiddenMaps || (m.hiddenMaps = {}))[key] = true;
+  saveState();
+  renderMatchDetail();
+}
+function unhideMatchMap(matchId, key) {
+  const t = curT();
+  if (!t || !isAdminUnlocked()) return;
+  const sd = getStageData(t, state.currentStage);
+  const m = (sd.matches || []).find(x => x.id === matchId);
+  if (!m || !m.hiddenMaps) return;
+  delete m.hiddenMaps[key];
+  saveState();
+  renderMatchDetail();
 }
 
 function renderMatchesTab() {
@@ -2670,10 +2797,11 @@ function renderMatchDetail() {
   const costBlock = matchCostHTML(a);
 
   // ---- per-map detailed scoreboards (osu! result-screen style) ----
+  const roster = rosterByName();
   const scoreRow = (p, colorCls) => {
     const mods = (p.playMod || []).map(x => x.acronym).filter(x => x !== 'V2');
     return `<div class="mm-pl ${colorCls}">
-      <span class="mm-pl-name">${escAttr(p.userName)}</span>
+      <span class="mm-pl-name">${flagForName(p.userName, roster)}${escAttr(p.userName)}</span>
       <span class="mm-pl-acc">${(p.accuracy * 100).toFixed(2)}%</span>
       <span class="mm-pl-score">${p.score.toLocaleString()}</span>
       <span class="mm-pl-mods">${modPills(mods)}</span>
@@ -2708,12 +2836,26 @@ function renderMatchDetail() {
       <div class="mm-mapcard-head">
         <span class="slot-badge ${slotClass(mp.slot)}">${mp.slot}</span>
         <div class="mm-map-name" title="${escAttr(mp.name)}">${escAttr(mp.name)}</div>
+        ${isAdminUnlocked() ? `<button class="mm-map-del" title="Remove this map from the match" onclick="hideMatchMap('${escJsAttr(m.id)}','${escJsAttr(mp.mapName)}')">✕</button>` : ''}
       </div>
       ${body}
       ${footer}
     </div>`;
   }
   mapsHtml += `</div>`;
+
+  // ---- restore list for maps hidden via ✕ (admin only) ----
+  let hiddenHtml = '';
+  const hiddenKeys = Object.keys(m.hiddenMaps || {});
+  if (isAdminUnlocked() && hiddenKeys.length) {
+    hiddenHtml = `<div class="mm-hidden">
+      <div class="mm-hidden-title">Removed maps</div>
+      ${hiddenKeys.map(k => `<div class="mm-hidden-row">
+        <span class="mm-hidden-name" title="${escAttr(k)}">${escAttr(k)}</span>
+        <button class="mm-hidden-restore" onclick="unhideMatchMap('${escJsAttr(m.id)}','${escJsAttr(k)}')">Restore</button>
+      </div>`).join('')}
+    </div>`;
+  }
 
   // ---- in-match add-score form (admin only) ----
   let addForm = '';
@@ -2741,6 +2883,7 @@ function renderMatchDetail() {
     ${scoreboard}
     ${costBlock}
     ${mapsHtml}
+    ${hiddenHtml}
     ${addForm}
   </div>`;
 }
@@ -3109,6 +3252,27 @@ function profileURL(p) {
   return uid ? `https://osudroid.moe/profile.php?uid=${uid}` : '';
 }
 
+// ---- country flags (flagcdn.com PNGs — render consistently across Windows/phone/etc.,
+// unlike emoji flags which Windows doesn't draw) ----
+// A country code is a 2-letter ISO code (e.g. "PL"); we lowercase it for the CDN path.
+function countryCode(p) {
+  const raw = (p && p.country != null) ? String(p.country).trim() : '';
+  return /^[A-Za-z]{2}$/.test(raw) ? raw.toUpperCase() : '';
+}
+// Small inline flag <img> for a 2-letter code, or '' if none/invalid.
+function flagHTML(code, cls) {
+  const cc = (/^[A-Za-z]{2}$/.test(String(code || '').trim())) ? String(code).trim().toLowerCase() : '';
+  if (!cc) return '';
+  return `<img class="flag${cls ? ' ' + cls : ''}" src="https://flagcdn.com/24x18/${cc}.png" `
+    + `srcset="https://flagcdn.com/48x36/${cc}.png 2x" alt="${escAttr(cc.toUpperCase())}" `
+    + `title="${escAttr(cc.toUpperCase())}" loading="lazy" width="18" height="14">`;
+}
+// Flag for a match-history nickname via the roster (nicknames don't carry a country themselves).
+function flagForName(name, roster) {
+  const rp = roster && roster[String(name || '').trim().toLowerCase()];
+  return rp ? flagHTML(countryCode(rp)) : '';
+}
+
 // Map a match-history nickname → its team-roster player entry (for avatars in the
 // profile modal, which only knows nicknames). Case-insensitive, built per current tournament.
 function rosterByName() {
@@ -3130,7 +3294,8 @@ function playerNameHTML(name, roster) {
   const avHTML = av
     ? `<span class="player-mini-av" style="background-image:url('${escAttr(av)}')"></span>`
     : `<span class="player-mini-av">${escAttr(initial)}</span>`;
-  return `<span class="player-cell">${avHTML}<span class="player-cell-name">${escAttr(clean)}</span></span>`;
+  const flag = rp ? flagHTML(countryCode(rp)) : '';
+  return `<span class="player-cell">${avHTML}${flag}<span class="player-cell-name">${escAttr(clean)}</span></span>`;
 }
 
 function renderTeams() {
@@ -3168,10 +3333,11 @@ function renderTeams() {
         const nameHtml = profUrl
           ? `<a class="pl-droid" href="${escAttr(profUrl)}" target="_blank" rel="noopener">${escAttr(p.droid || '—')}</a>`
           : `<span class="pl-droid">${escAttr(p.droid || '—')}</span>`;
+        const flag = flagHTML(countryCode(p), 'pl-flag');
         html += `<div class="team-player">
           <div class="pl-avatar" ${av}></div>
           <div class="pl-info">
-            <div class="pl-top">${nameHtml}${p.rank ? `<span class="pl-rank">#${escAttr(String(p.rank))}</span>` : ''}</div>
+            <div class="pl-top">${flag}${nameHtml}${p.rank ? `<span class="pl-rank">#${escAttr(String(p.rank))}</span>` : ''}</div>
             ${p.discord ? `<div class="pl-discord">${escAttr(p.discord)}</div>` : ''}
           </div>
         </div>`;
@@ -3202,7 +3368,7 @@ function openTeamEditor(id) {
     teamDraft = { id: team.id, name: team.name, seed: team.seed || '', players: (team.players || []).map(p => ({ ...p })) };
     document.getElementById('team-modal-title').textContent = 'Edit Team';
   } else {
-    teamDraft = { id: null, name: '', seed: '', players: [{ droid: '', uid: '', discord: '', avatar: '', rank: '', profile: '' }] };
+    teamDraft = { id: null, name: '', seed: '', players: [{ droid: '', uid: '', discord: '', avatar: '', rank: '', country: '', profile: '' }] };
     document.getElementById('team-modal-title').textContent = 'New Team';
   }
   document.getElementById('team-name-input').value = teamDraft.name;
@@ -3221,8 +3387,10 @@ function renderPlayerRows() {
       <div class="tp-e-prev" ${prev}></div>
       <input class="tp-e-droid" placeholder="osu!droid username" value="${escAttr(p.droid || '')}">
       <input class="tp-e-uid" placeholder="player ID" value="${escAttr(p.uid || '')}" oninput="onUidInput(${i})">
-      <button class="tp-e-fetch" onclick="fetchDroidProfile(${i})" title="Fetch username + rank from player ID">Fetch</button>
+      <button class="tp-e-fetch" onclick="fetchDroidProfile(${i})" title="Fetch username + rank + country from player ID">Fetch</button>
       <input class="tp-e-rank" placeholder="dpp rank" value="${escAttr(p.rank || '')}">
+      <input class="tp-e-country" placeholder="Country (PL)" maxlength="2" value="${escAttr(p.country || '')}" oninput="onCountryInput(${i})">
+      <span class="tp-e-flag" data-i="${i}">${flagHTML(countryCode(p))}</span>
       <input class="tp-e-discord" placeholder="Discord username" value="${escAttr(p.discord || '')}">
       <input class="tp-e-avatar" placeholder="Avatar URL (override, optional)" value="${escAttr(p.avatar || '')}">
       <input class="tp-e-profile" placeholder="Profile URL (override, optional)" value="${escAttr(p.profile || '')}">
@@ -3230,6 +3398,15 @@ function renderPlayerRows() {
       <div class="tp-e-status" data-i="${i}"></div>
     </div>`;
   }).join('') || '<div style="font-size:12px;color:var(--muted);">No players yet — add one below.</div>';
+}
+
+// Live flag preview as the country code is typed.
+function onCountryInput(i) {
+  const row = document.querySelector(`#team-players-edit .tp-edit-row[data-i="${i}"]`);
+  if (!row) return;
+  const cc = row.querySelector('.tp-e-country').value.trim();
+  const flag = row.querySelector('.tp-e-flag');
+  if (flag) flag.innerHTML = flagHTML(cc);
 }
 
 // Live avatar preview as the player ID is typed (no fetch, just the deterministic URL).
@@ -3305,11 +3482,15 @@ async function fetchDroidProfile(i) {
 
     const dn = row.querySelector('.tp-e-droid');
     const rk = row.querySelector('.tp-e-rank');
+    const cy = row.querySelector('.tp-e-country');
     dn.value = info.name;
     if (info.ppRank) rk.value = info.ppRank;
+    // Only fill country if the field is empty, so a manual override isn't clobbered.
+    if (info.country && cy && !cy.value.trim()) { cy.value = info.country; onCountryInput(i); }
     onUidInput(i);
     const bits = [info.name];
     if (info.ppRank) bits.push('PP rank #' + info.ppRank);
+    if (info.country) bits.push(info.country);
     status.textContent = '✓ ' + bits.join(' · '); status.className = 'tp-e-status ok';
   } catch (e) {
     status.textContent = 'Error: ' + e.message + '.';
@@ -3332,7 +3513,13 @@ function parseDroidProfile(html, uid) {
   let ppRank = '';
   const m = html.match(/PP\s*Rank:\s*<a>\s*#?\s*([0-9,]+)/i);
   if (m) ppRank = m[1].replace(/,/g, '');
-  return { name, ppRank };
+  // Country: the profile's Technical Analysis lists "Location: PL" (2-letter code).
+  // Allow any tags/whitespace/colons between the label and the code (table cells etc.),
+  // and require an exact 2-letter token so a full country name isn't half-matched.
+  let country = '';
+  const cm = html.match(/Location[\s:]*(?:<[^>]*>\s*)*\b([A-Za-z]{2})\b/i);
+  if (cm) country = cm[1].toUpperCase();
+  return { name, ppRank, country };
 }
 
 function readPlayerRows() {
@@ -3340,15 +3527,16 @@ function readPlayerRows() {
     droid: r.querySelector('.tp-e-droid').value.trim(),
     uid: r.querySelector('.tp-e-uid').value.trim(),
     rank: r.querySelector('.tp-e-rank').value.trim(),
+    country: r.querySelector('.tp-e-country').value.trim().toUpperCase(),
     discord: r.querySelector('.tp-e-discord').value.trim(),
     avatar: r.querySelector('.tp-e-avatar').value.trim(),
     profile: r.querySelector('.tp-e-profile').value.trim()
-  })).filter(p => p.droid || p.discord || p.avatar || p.rank || p.uid);
+  })).filter(p => p.droid || p.discord || p.avatar || p.rank || p.uid || p.country);
 }
 
 function addPlayerRow() {
   teamDraft.players = readPlayerRows();
-  teamDraft.players.push({ droid: '', uid: '', discord: '', avatar: '', rank: '', profile: '' });
+  teamDraft.players.push({ droid: '', uid: '', discord: '', avatar: '', rank: '', country: '', profile: '' });
   renderPlayerRows();
 }
 
@@ -4013,9 +4201,10 @@ function openProfile(name) {
     avEl.textContent = name.charAt(0).toUpperCase();
   }
   const profUrl = rp ? profileURL(rp) : '';
-  document.getElementById('profile-name').innerHTML = profUrl
+  const nameFlag = rp ? flagHTML(countryCode(rp), 'profile-flag') : '';
+  document.getElementById('profile-name').innerHTML = nameFlag + (profUrl
     ? `<a href="${escAttr(profUrl)}" target="_blank" rel="noopener" class="profile-name-link">${escAttr(name)}</a>`
-    : escAttr(name);
+    : escAttr(name));
   document.getElementById('profile-stage').textContent = `${t.name} · ${stageLabel(state.currentStage)} · ${scores.length} map${scores.length>1?'s':''} played`;
 
   let body = `<div class="profile-stats">
@@ -4066,7 +4255,6 @@ function revealAdminIfRequested() {
   if (location.hash.toLowerCase() === '#admin') {
     const b1 = document.getElementById('admin-toggle-btn');
     if (b1) b1.style.display = '';
-    if (state.page === 'home') renderHome(); // show the +Add card
   }
 }
 window.addEventListener('hashchange', revealAdminIfRequested);
@@ -4094,7 +4282,7 @@ async function toggleAdmin() {
     ov.classList.remove('show');
     btn.classList.remove('active');
     // refresh public views so admin-only controls (e.g. the in-match add-score form) appear
-    if (state.page === 'stats') renderAll();
+    applyPage();
     return;
   }
   const input = prompt('Enter admin password:');
@@ -4122,6 +4310,9 @@ async function toggleAdmin() {
   state.adminTournamentId = state.currentTournamentId || (state.tournaments[0] && state.tournaments[0].id);
   state.adminStage = state.currentStage;
   refreshAdminPanel();
+  // re-render the public page behind the drawer so admin-only controls
+  // (＋ Add Tournament, team Edit buttons, map ✕) appear now that we're unlocked
+  applyPage();
 }
 
 // ==================== KICK OFF (after config consts are initialized) ====================
