@@ -2351,7 +2351,6 @@ function renderMappoolStats() {
 
   const allScores = entries.flatMap(e => getPlayerScores(e.info));
   const players = new Set(allScores.map(s=>s.userName));
-  const roster = rosterByName();
   const matchNames = new Set();
   for (const st of currentStageList(t)) for (const m of (getStageData(t, st).matches || [])) matchNames.add(cleanMatchName(m.name, m));
   const playedMaps = entries.filter(e => !e.info._empty);
@@ -2423,7 +2422,7 @@ function renderMappoolStats() {
       const mods = (p.playMod||[]).map(m=>m.acronym).filter(m=>m!=='V2');
       html += `<div class="tp-row">
         <span class="tp-rank ${rc}">#${i+1}</span>
-        <span class="tp-name">${flagForName(p.userName, roster)}${escAttr(p.userName)}</span>
+        <span class="tp-name">${escAttr(p.userName)}</span>
         <span class="tp-score">${p.score.toLocaleString()}</span>
         <span class="tp-acc ${accCls(p.accuracy*100)}">${(p.accuracy*100).toFixed(2)}%</span>
         <span class="tp-mods">${modPills(mods)}</span>
@@ -2658,12 +2657,11 @@ function computeMatchCosts(a) {
 function matchCostHTML(a) {
   const costs = computeMatchCosts(a);
   if (!costs.length) return '';
-  const roster = rosterByName();
   const rows = costs.map((c, i) => {
     const cls = a.isTeamVs ? teamColorClass(c.team === 0 || c.team === '0' ? 0 : 1) : '';
     return `<div class="mm-cost-row${i === 0 ? ' mvp' : ''}">
       <span class="mm-cost-rank">${i + 1}</span>
-      <span class="mm-cost-name ${cls}">${flagForName(c.name, roster)}${escAttr(c.name)}</span>
+      <span class="mm-cost-name ${cls}">${escAttr(c.name)}</span>
       <span class="mm-cost-val">${c.cost.toFixed(2)}</span>
     </div>`;
   }).join('');
@@ -2806,11 +2804,10 @@ function renderMatchDetail() {
   const costBlock = matchCostHTML(a);
 
   // ---- per-map detailed scoreboards (osu! result-screen style) ----
-  const roster = rosterByName();
   const scoreRow = (p, colorCls) => {
     const mods = (p.playMod || []).map(x => x.acronym).filter(x => x !== 'V2');
     return `<div class="mm-pl ${colorCls}">
-      <span class="mm-pl-name">${flagForName(p.userName, roster)}${escAttr(p.userName)}</span>
+      <span class="mm-pl-name">${escAttr(p.userName)}</span>
       <span class="mm-pl-acc">${(p.accuracy * 100).toFixed(2)}%</span>
       <span class="mm-pl-score">${p.score.toLocaleString()}</span>
       <span class="mm-pl-mods">${modPills(mods)}</span>
@@ -3278,6 +3275,7 @@ function flagHTML(code, cls) {
     + `width="21" height="14" onerror="this.remove()">`;
 }
 // Flag for a match-history nickname via the roster (nicknames don't carry a country themselves).
+// Currently unused — flags are shown only in the profile modal and on the Teams page.
 function flagForName(name, roster) {
   const rp = roster && roster[String(name || '').trim().toLowerCase()];
   return rp ? flagHTML(countryCode(rp)) : '';
@@ -3304,8 +3302,7 @@ function playerNameHTML(name, roster) {
   const avHTML = av
     ? `<span class="player-mini-av" style="background-image:url('${escAttr(av)}')"></span>`
     : `<span class="player-mini-av">${escAttr(initial)}</span>`;
-  const flag = rp ? flagHTML(countryCode(rp)) : '';
-  return `<span class="player-cell">${avHTML}${flag}<span class="player-cell-name">${escAttr(clean)}</span></span>`;
+  return `<span class="player-cell">${avHTML}<span class="player-cell-name">${escAttr(clean)}</span></span>`;
 }
 
 function renderTeams() {
