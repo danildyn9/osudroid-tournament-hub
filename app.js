@@ -299,17 +299,11 @@ function ensureSeed() {
 }
 
 // ==================== INIT ====================
-loadState();
-ensureSeed();
-readStateFromURL();
-renderBrand();
-buildAdminStagePills();
-buildAdminStageVisibility();
-buildEmptySlotGrid();
-applyPage();
-renderAll();
-// setupSplashVideo() is called at the very end of this file — its SPLASH_* config
-// consts are declared later, so calling it here would hit the temporal dead zone.
+// ⚠️ The real init call sequence lives at the very END of this file (see KICK OFF).
+// It must run after every top-level const/let is initialized — function declarations
+// hoist, but consts (VIEWS, BYE, SPLASH_*, …) don't, and calling into them earlier
+// throws "Cannot access before initialization" and kills the whole script on
+// deep links like ?page=bracket or &view=matches.
 
 // ==================== BRAND / LOGO ====================
 function defaultLogoSVG() {
@@ -4367,6 +4361,18 @@ async function toggleAdmin() {
   applyPage();
 }
 
-// ==================== KICK OFF (after config consts are initialized) ====================
+// ==================== KICK OFF (after ALL top-level consts are initialized) ====================
+// Full init lives here, not near the top of the file: readStateFromURL needs VIEWS,
+// renderBracket needs BYE, setupSplashVideo needs SPLASH_* — all consts declared
+// throughout the file. Running any of this earlier hits the temporal dead zone.
+loadState();
+ensureSeed();
+readStateFromURL();
+renderBrand();
+buildAdminStagePills();
+buildAdminStageVisibility();
+buildEmptySlotGrid();
+applyPage();
+renderAll();
 setupSplashVideo();
 syncFromRemote();   // pull shared data from the Worker; falls back to local cache
