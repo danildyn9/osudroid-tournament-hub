@@ -197,10 +197,10 @@ h1,h2,h3,.site-title{font-family:var(--head);}
 .player-cell{display:flex;align-items:center;gap:8px;min-width:0;}
 .player-mini-av{width:24px;height:24px;border-radius:50%;flex:0 0 24px;background:var(--surface2) center/cover no-repeat;border:1px solid var(--border2);display:inline-flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--head);font-size:11px;font-weight:700;}
 .player-cell-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-/* COUNTRY FLAGS (flagcdn.com PNGs) */
-.flag{width:18px;height:14px;border-radius:2px;flex:0 0 auto;vertical-align:-2px;box-shadow:0 0 0 1px rgba(255,255,255,0.08);object-fit:cover;}
+/* COUNTRY FLAGS (osudroid.moe smallflags — rounded rectangles, 140x94 source) */
+.flag{width:21px;height:14px;border-radius:3px;flex:0 0 auto;vertical-align:-2px;object-fit:cover;}
 .pl-flag{align-self:center;}
-.profile-flag{width:24px;height:18px;margin-right:8px;vertical-align:-3px;}
+.profile-flag{width:27px;height:18px;margin-right:8px;vertical-align:-3px;}
 .sc{font-weight:700;color:#fff;text-align:right;font-variant-numeric:tabular-nums;}
 .ac{text-align:right;font-variant-numeric:tabular-nums;color:#fff;}
 .ah{color:#5fd38a}.am{color:#f0c064}.al{color:#e57689;}

@@ -3261,9 +3261,10 @@ function profileURL(p) {
   return uid ? `https://osudroid.moe/profile.php?uid=${uid}` : '';
 }
 
-// ---- country flags (flagcdn.com PNGs — render consistently across Windows/phone/etc.,
-// unlike emoji flags which Windows doesn't draw) ----
-// A country code is a 2-letter ISO code (e.g. "PL"); we lowercase it for the CDN path.
+// ---- country flags (osudroid.moe's own flag assets — same icons as the players'
+// profiles on osudroid.moe; rendered as images so they look identical on
+// Windows/phone/etc., unlike emoji flags which Windows doesn't draw) ----
+// A country code is a 2-letter ISO code (e.g. "PL"); we lowercase it for the asset path.
 function countryCode(p) {
   const raw = (p && p.country != null) ? String(p.country).trim() : '';
   return /^[A-Za-z]{2}$/.test(raw) ? raw.toUpperCase() : '';
@@ -3272,9 +3273,9 @@ function countryCode(p) {
 function flagHTML(code, cls) {
   const cc = (/^[A-Za-z]{2}$/.test(String(code || '').trim())) ? String(code).trim().toLowerCase() : '';
   if (!cc) return '';
-  return `<img class="flag${cls ? ' ' + cls : ''}" src="https://flagcdn.com/24x18/${cc}.png" `
-    + `srcset="https://flagcdn.com/48x36/${cc}.png 2x" alt="${escAttr(cc.toUpperCase())}" `
-    + `title="${escAttr(cc.toUpperCase())}" loading="lazy" width="18" height="14">`;
+  return `<img class="flag${cls ? ' ' + cls : ''}" src="https://osudroid.moe/assets/smallflags/${cc}.png" `
+    + `alt="${escAttr(cc.toUpperCase())}" title="${escAttr(cc.toUpperCase())}" loading="lazy" `
+    + `width="21" height="14" onerror="this.remove()">`;
 }
 // Flag for a match-history nickname via the roster (nicknames don't carry a country themselves).
 function flagForName(name, roster) {
