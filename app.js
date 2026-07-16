@@ -4250,14 +4250,6 @@ function handleProfileOverlayClick(e) {
   if (e.target === document.getElementById('profile-modal')) closeProfile();
 }
 
-// ==================== ADMIN PASSWORD ====================
-// The admin password is verified server-side by the Cloudflare Worker (see
-// verifyAdminPassword / the /auth route). Nothing sensitive — no password, no
-// hash — is stored in this public file. To change the password, update the
-// ADMIN_SECRET value in the Worker's environment variables.
-
-// The Admin button stays hidden until the user visits the page with #admin
-// in the URL. This keeps admin controls invisible to ordinary visitors.
 function revealAdminIfRequested() {
   if (location.hash.toLowerCase() === '#admin') {
     const b1 = document.getElementById('admin-toggle-btn');
@@ -4282,7 +4274,7 @@ function refreshAdminPanel() {
   if (sp) { if (state.splashBg) { sp.style.backgroundImage = `url('${state.splashBg}')`; sp.classList.add('show'); } else { sp.style.backgroundImage = ''; sp.classList.remove('show'); } }
 }
 
-// ---- storage usage panel (admin → Danger) ----
+// ---- storage usage panel ----
 // Shows total state size vs the ~5MB localStorage quota, plus a per-item breakdown
 // of the embedded base64 images so it's obvious what to shrink when full.
 function renderStorageUsage() {
@@ -4373,4 +4365,4 @@ buildEmptySlotGrid();
 applyPage();
 renderAll();
 setupSplashVideo();
-syncFromRemote();   // pull shared data from the Worker; falls back to local cache
+syncFromRemote();
